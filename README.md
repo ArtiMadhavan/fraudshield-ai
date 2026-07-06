@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-check.svg" width="80" alt="FraudShield AI Logo" />
-  <h1 align="center">FraudShield AI v4.0</h1>
+  <h1 align="center">FraudShield AI (Enterprise v10.0)</h1>
   <p align="center">
     <strong>Enterprise-Grade Payment Fraud Prevention & AI Decision Engine</strong>
   </p>
@@ -10,6 +10,7 @@
     <img src="https://img.shields.io/badge/FastAPI-0.104-009688?style=for-the-badge&logo=fastapi" alt="FastAPI" />
     <img src="https://img.shields.io/badge/Scikit--Learn-1.3-F7931E?style=for-the-badge&logo=scikit-learn" alt="Scikit-Learn" />
     <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql" alt="MySQL" />
+    <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
   </p>
 </div>
 
@@ -17,20 +18,21 @@
 
 ## 📖 Project Overview
 
-**FraudShield AI** is an enterprise-class payment fraud detection and transaction intelligence platform. Built using modern Full-Stack Development, Machine Learning, Business Intelligence, and Enterprise Software Engineering practices, this platform analyzes transactions in real-time, blocks fraudulent activity, and provides human-readable AI explanations for every decision.
+**FraudShield AI** is a production-ready enterprise payment fraud detection and transaction intelligence platform. Built using modern Full-Stack Development, Machine Learning, Business Intelligence, and Enterprise Software Engineering practices, this platform analyzes transactions in real-time, blocks fraudulent activity, and provides human-readable AI explanations for every decision.
 
-Developed as a comprehensive MCA Final Year Project, it serves as a portfolio-ready demonstration of full-stack engineering, DevOps, and applied AI.
+Developed as a comprehensive Final Year Project, it serves as a portfolio-ready demonstration of full-stack engineering, CI/CD, DevOps, and applied AI.
 
-## ✨ Enterprise Features
+## ✨ Features
 
-- 🧠 **AI Decision Engine:** Real-time transaction scoring using XGBoost and Random Forest models.
-- 🔍 **Rule-Based Explainability:** Human-readable reasoning for every AI decision.
-- 🎨 **Premium UI/UX:** Stunning, glassmorphic Next.js frontend with Framer Motion animations.
-- 📊 **360° Profiles:** Deep-dive intelligence into Customer behavior and Merchant risk.
-- 🕵️ **Investigation Workspace:** Enterprise tools for fraud analysts to review and freeze accounts.
-- 💳 **Payment Simulator:** Animated, real-time simulation of the AI intercepting a live transaction.
+- 🧠 **AI Decision Engine:** Real-time transaction scoring using dynamic Machine Learning pipelines (XGBoost, Random Forest, Decision Trees, Logistic Regression).
+- 🔍 **Rule-Based Explainability:** Human-readable reasoning for every AI decision based on velocity, location, and behavior.
+- 🔐 **Enterprise Security:** JWT Auth, Refresh Tokens, BCrypt hashing, and strict Role-Based Access Control (RBAC).
+- 🚀 **Real-Time WebSockets:** Live streaming of fraud alerts, new transactions, and system KPIs directly to the dashboard.
+- 📊 **360° Profiles:** Deep-dive intelligence into Customer behavior, Merchant risk, and historic timelines.
+- 🕵️ **Investigation Workspace:** Enterprise case management tools for fraud analysts.
+- 💳 **Payment Simulator:** End-to-end, live simulation of payments intercepted by the AI engine.
 
-## 🏗️ Architecture
+## 🏗️ Architecture Diagram
 
 ```mermaid
 flowchart TD
@@ -41,49 +43,82 @@ flowchart TD
   E -->|Transaction Vectors| F[Machine Learning Models]
   F -->|Anomaly Score| G[AI Decision Engine]
   G -->|Explainability| H[Rule-Based Reasoner]
-  H -->|Final Verdict| I[(MySQL / SQLite Database)]
-  I -->|Real-time Updates| J[Fraud Analyst Dashboard]
+  H -->|Final Verdict| I[(MySQL Database)]
+  I -->|WebSocket Broadcast| J[Live Analyst Dashboard]
 ```
 
-## 🚀 Production Deployment Guide
+## 🛠️ Tech Stack
 
-This repository is strictly configured for modern PaaS deployment.
+- **Frontend:** Next.js 14 (App Router), React, TailwindCSS, Framer Motion, Recharts.
+- **Backend:** FastAPI, Uvicorn, SQLAlchemy (ORM), JWT, WebSockets.
+- **Machine Learning:** Scikit-Learn, XGBoost, Pandas, Joblib.
+- **Database:** MySQL 8.0 (Production), SQLite (Local Dev).
+- **DevOps:** Docker, Docker Compose, GitHub Actions (CI/CD), Vercel, Render.
 
-### 1. Frontend (Vercel)
-The Next.js 15 frontend is optimized for **Vercel**.
-1. Create a [Vercel](https://vercel.com) account.
-2. Connect this GitHub repository.
-3. Vercel will automatically detect the Next.js framework.
-4. Set the `NEXT_PUBLIC_API_URL` environment variable to your backend URL (e.g., `https://fraudshield-api.onrender.com`).
-5. Click **Deploy**.
+## 📂 Folder Structure
 
-### 2. Backend (Render)
-The FastAPI backend is configured for **Render** via the included `render.yaml`.
-1. Create a [Render](https://render.com) account.
-2. Go to Dashboard -> **Blueprints** -> New Blueprint Instance.
-3. Connect this GitHub repository.
-4. Render will read `render.yaml` and automatically deploy the web service.
+```
+FraudShield-AI/
+├── backend/               # FastAPI Application
+│   ├── app/               # Core Application (API, Models, Services)
+│   ├── ml_engine/         # Machine Learning Pipelines
+│   ├── tests/             # Pytest Suites
+│   ├── Dockerfile         # Backend Container
+│   └── requirements.txt   # Python Dependencies
+├── frontend/              # Next.js Application
+│   ├── src/app/           # App Router & Pages
+│   ├── src/components/    # Reusable React UI
+│   ├── Dockerfile         # Frontend Container
+│   └── package.json       # NPM Dependencies
+├── database/              # DB Initialization Scripts
+├── .github/workflows/     # GitHub Actions CI/CD
+├── docker-compose.yml     # Local Orchestration
+└── README.md
+```
 
-### 3. Database (Railway / PlanetScale)
-By default, the backend uses `SQLite` for zero-config local development. For production:
-1. Provision a MySQL database on [Railway](https://railway.app).
-2. Get the connection string (`mysql+pymysql://user:pass@host:port/db`).
-3. Add it as the `DATABASE_URL` environment variable in your Render dashboard.
+## 💻 Installation & Setup
 
-## 💻 Local Development
-
-A convenient batch script is provided for Windows users.
+A convenient batch script is provided for Windows users to automatically setup a fresh environment.
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/your-username/fraudshield-ai.git
 cd fraudshield-ai
 
-# Start the servers (Requires Node.js 20+ and Python 3.11+)
+# 2. Start the servers (Requires Node.js 20+ and Python 3.11+)
 .\start.bat
 ```
-- Frontend: `http://localhost:3000`
+The script will automatically create the Python virtual environment, install all PIP and NPM dependencies, seed the initial database, and boot both servers.
+- Frontend Dashboard: `http://localhost:3000`
 - Backend API Docs: `http://localhost:8000/docs`
+
+## 🐳 Docker Setup
+
+To run the entire platform (MySQL, FastAPI, Next.js) inside isolated containers:
+```bash
+docker-compose up -d --build
+```
+
+## ☁️ Deployment Guide
+
+This repository includes Infrastructure-as-Code (IaC) files for zero-modification deployment.
+- **Frontend (Vercel):** Connect your GitHub repo to Vercel. It will auto-detect the `vercel.json` config.
+- **Backend (Render):** Connect your GitHub repo to Render using the `render.yaml` Blueprint.
+- **Database (Railway):** Provision a MySQL DB on Railway and inject the `DATABASE_URL` into Render.
+
+## 🤖 ML Workflow
+
+1. Data is loaded and cleaned from the SQL database.
+2. The `train_models.py` pipeline engineers features (Velocity, Geo-distance, Amounts).
+3. It trains four distinct models simultaneously.
+4. It compares Accuracy, F1, and ROC-AUC scores.
+5. The champion model is serialized via `joblib` and instantly hot-swapped into the running FastAPI instance.
+
+## 🔮 Future Enhancements
+
+- Integrate external IP reputation API services (e.g., MaxMind).
+- Add two-factor authentication (2FA) for Fraud Analysts.
+- Implement graph databases (Neo4j) to detect fraud rings visually.
 
 ## 🛡️ License
 MIT License.

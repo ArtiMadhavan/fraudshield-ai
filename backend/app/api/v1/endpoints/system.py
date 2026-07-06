@@ -56,3 +56,65 @@ def generate_pdf_report(report_type: str, db: Session = Depends(get_db)):
     
     pdf.output(file_path)
     return FileResponse(path=file_path, filename=f"{report_type}_report.pdf", media_type='application/pdf')
+
+@router.get("/analytics")
+def get_analytics(db: Session = Depends(get_db)):
+    # Simulating DB analytics generation for customer demographics and merchant performance
+    customerData = [
+        {"age": "18-24", "count": 120, "fraud": 15},
+        {"age": "25-34", "count": 450, "fraud": 45},
+        {"age": "35-44", "count": 320, "fraud": 20},
+        {"age": "45-54", "count": 210, "fraud": 10},
+        {"age": "55+", "count": 90, "fraud": 2},
+    ]
+
+    merchantData = [
+        {"name": "Amazon", "volume": 45000, "fraudRate": 0.2},
+        {"name": "Apple", "volume": 38000, "fraudRate": 0.1},
+        {"name": "Walmart", "volume": 22000, "fraudRate": 0.5},
+        {"name": "CryptoEx", "volume": 15000, "fraudRate": 12.4},
+        {"name": "Unknown", "volume": 5000, "fraudRate": 4.8},
+    ]
+
+    heatmapData = [
+        {"region": "North America", "volume": "$4.2M", "attempts": 124, "risk": "Low", "trend": "down"},
+        {"region": "Europe", "volume": "$2.8M", "attempts": 98, "risk": "Low", "trend": "down"},
+        {"region": "Eastern Europe", "volume": "$850K", "attempts": 342, "risk": "High", "trend": "up"},
+        {"region": "High-Risk IP Zones", "volume": "$120K", "attempts": 450, "risk": "Critical", "trend": "up"},
+    ]
+
+    return {
+        "customerData": customerData,
+        "merchantData": merchantData,
+        "heatmapData": heatmapData
+    }
+
+@router.get("/ml-metrics")
+def get_ml_metrics(db: Session = Depends(get_db)):
+    # Simulating ML performance metrics and feature importance
+    featureImportance = [
+        {"name": "Amount", "value": 85},
+        {"name": "Location", "value": 72},
+        {"name": "Time of Day", "value": 68},
+        {"name": "Device Type", "value": 55},
+        {"name": "Customer Age", "value": 45},
+        {"name": "Payment Method", "value": 38},
+    ]
+
+    modelComparison = [
+        {"subject": "Accuracy", "XGBoost": 94, "RandomForest": 91, "LogisticRegression": 78, "fullMark": 100},
+        {"subject": "Precision", "XGBoost": 92, "RandomForest": 88, "LogisticRegression": 72, "fullMark": 100},
+        {"subject": "Recall", "XGBoost": 89, "RandomForest": 84, "LogisticRegression": 65, "fullMark": 100},
+        {"subject": "F1 Score", "XGBoost": 90, "RandomForest": 86, "LogisticRegression": 68, "fullMark": 100},
+        {"subject": "AUC-ROC", "XGBoost": 96, "RandomForest": 93, "LogisticRegression": 81, "fullMark": 100},
+        {"subject": "Speed", "XGBoost": 85, "RandomForest": 75, "LogisticRegression": 98, "fullMark": 100},
+    ]
+
+    return {
+        "active_model": "XGBoost-V4",
+        "f1_score": 0.902,
+        "precision": 92.4,
+        "training_data": "2.4M",
+        "featureImportance": featureImportance,
+        "modelComparison": modelComparison
+    }

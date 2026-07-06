@@ -14,13 +14,48 @@ const spendingTrend = [
   { month: 'Jun', spend: 550 },
 ];
 
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+
+interface CustomerProfile {
+  id: string;
+  name: string;
+  risk_score: number;
+  customer_since: string;
+  avg_spend: number;
+  top_merchant: string;
+  spendingTrend: { month: string; spend: number }[];
+  summary: string;
+}
+
 export default function Customer360() {
+  const [customer, setCustomer] = useState<CustomerProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      try {
+        const res = await api.get('/customers/CUST-9921');
+        setCustomer(res.data);
+      } catch (err) {
+        console.error("Failed to load customer profile", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCustomer();
+  }, []);
+
+  if (loading || !customer) {
+    return <div className="flex h-96 items-center justify-center text-muted-foreground animate-pulse">Loading Live Customer Profile...</div>;
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Customer 360° Profile</h1>
-          <p className="text-muted-foreground mt-1">Comprehensive behavioral and risk analysis for CUST-9921.</p>
+          <p className="text-muted-foreground mt-1">Comprehensive behavioral and risk analysis for {customer.id}.</p>
         </div>
         <button className="bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border px-5 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm">
           <Download className="w-4 h-4" /> Export Data
@@ -35,34 +70,36 @@ export default function Customer360() {
           
           <div className="flex items-center gap-4 mb-8">
             <div className="w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg shadow-primary/20">
-              JD
+              {customer.name.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">John Doe</h2>
-              <p className="text-sm font-medium text-muted-foreground">ID: CUST-9921</p>
+              <h2 className="text-xl font-bold text-foreground">{customer.name}</h2>
+              <p className="text-sm font-medium text-muted-foreground">ID: {customer.id}</p>
             </div>
           </div>
           
           <div className="space-y-5 text-sm">
             <div className="flex justify-between pb-3 border-b border-border/50">
               <span className="text-muted-foreground font-medium">Risk Level</span>
-              <span className="font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-md">High (85/100)</span>
+              <span className={`font-bold px-2 py-0.5 rounded-md ${customer.risk_score > 70 ? 'text-destructive bg-destructive/10' : 'text-success bg-success/10'}`}>
+                {customer.risk_score > 70 ? 'High' : 'Low'} ({customer.risk_score}/100)
+              </span>
             </div>
             <div className="flex justify-between pb-3 border-b border-border/50">
               <span className="text-muted-foreground font-medium">Customer Since</span>
-              <span className="font-bold text-foreground">Mar 2024</span>
+              <span className="font-bold text-foreground">{customer.customer_since}</span>
             </div>
             <div className="flex justify-between pb-3 border-b border-border/50">
               <span className="text-muted-foreground font-medium">Avg. Monthly Spend</span>
-              <span className="font-bold text-foreground">$500.00</span>
+              <span className="font-bold text-foreground">${customer.avg_spend.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pb-3 border-b border-border/50">
               <span className="text-muted-foreground font-medium">Preferred Method</span>
-              <span className="font-bold text-foreground">Credit Card (*4242)</span>
+              <span className="font-bold text-foreground">Credit Card</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground font-medium">Top Merchant</span>
-              <span className="font-bold text-foreground">Amazon</span>
+              <span className="font-bold text-foreground">{customer.top_merchant}</span>
             </div>
           </div>
         </div>
@@ -76,7 +113,7 @@ export default function Customer360() {
           </div>
           <div className="h-64">
              <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={spendingTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={customer.spendingTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
@@ -105,10 +142,7 @@ export default function Customer360() {
            <AlertTriangle className="w-6 h-6" /> AI Behaviour Summary
         </h2>
         <p className="text-muted-foreground leading-relaxed text-base max-w-4xl relative z-10">
-          Customer CUST-9921 typically spends ~$500/month primarily on e-commerce and groceries within the United States. 
-          <span className="text-destructive font-semibold px-1"> In April, a significant anomaly was detected with spending spiking by 420%.</span> 
-          Recent transactions include an abnormally high $4,500 attempted purchase from a new IP address located in Russia, directed to a high-risk Crypto merchant. 
-          The AI Decision Engine strongly recommends freezing the account pending manual identity verification.
+          {customer.summary}
         </p>
         
         <div className="mt-8 flex gap-4 relative z-10">

@@ -7,24 +7,41 @@ import {
 } from 'recharts';
 import { ShieldCheck, ShieldAlert, DollarSign, Activity, AlertTriangle, Users, TrendingUp, Download } from "lucide-react";
 
-// Mock Data for BI Dashboard
-const monthlyTrend = [
-  { name: 'Jan', total: 45000, fraud: 1200 },
-  { name: 'Feb', total: 52000, fraud: 1500 },
-  { name: 'Mar', total: 48000, fraud: 900 },
-  { name: 'Apr', total: 61000, fraud: 1100 },
-  { name: 'May', total: 59000, fraud: 800 },
-  { name: 'Jun', total: 68000, fraud: 750 },
-];
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 
-const riskDistribution = [
-  { name: 'Low Risk', value: 85, color: '#10b981' }, // Emerald
-  { name: 'Medium Risk', value: 10, color: '#f59e0b' }, // Amber
-  { name: 'High Risk', value: 4, color: '#f43f5e' }, // Rose
-  { name: 'Critical', value: 1, color: '#9f1239' }, // Rose 900
-];
+interface DashboardStats {
+  today_revenue: number;
+  revenue_trend: number;
+  fraud_blocked: number;
+  fraud_trend: number;
+  high_risk_merchants: number;
+  model_accuracy: number;
+  monthlyTrend: { name: string; total: number; fraud: number }[];
+  riskDistribution: { name: string; value: number; color: string }[];
+}
 
 export default function ExecutiveDashboard() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/dashboard/stats');
+        setStats(res.data);
+      } catch (err) {
+        console.error("Failed to load dashboard stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading || !stats) {
+    return <div className="flex h-96 items-center justify-center text-muted-foreground animate-pulse">Loading Live Enterprise Data...</div>;
+  }
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -48,7 +65,7 @@ export default function ExecutiveDashboard() {
             <span className="text-xs font-semibold text-success bg-success/10 px-2.5 py-1 rounded-full">+12.5%</span>
           </div>
           <p className="text-sm font-medium text-muted-foreground mb-1">Today&apos;s Revenue</p>
-          <h3 className="text-3xl font-bold tracking-tight">$1,245,000</h3>
+          <h3 className="text-3xl font-bold tracking-tight">${stats.today_revenue.toLocaleString()}</h3>
         </motion.div>
         
         <motion.div whileHover={{ y: -4 }} className="bg-card border border-border p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
@@ -59,7 +76,7 @@ export default function ExecutiveDashboard() {
             <span className="text-xs font-semibold text-success bg-success/10 px-2.5 py-1 rounded-full">-2.1%</span>
           </div>
           <p className="text-sm font-medium text-muted-foreground mb-1">Fraud Blocked</p>
-          <h3 className="text-3xl font-bold tracking-tight">1,432</h3>
+          <h3 className="text-3xl font-bold tracking-tight">{stats.fraud_blocked.toLocaleString()}</h3>
         </motion.div>
 
         <motion.div whileHover={{ y: -4 }} className="bg-card border border-border p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
@@ -70,7 +87,7 @@ export default function ExecutiveDashboard() {
             <span className="text-xs font-semibold text-muted-foreground bg-muted px-2.5 py-1 rounded-full">Alerts</span>
           </div>
           <p className="text-sm font-medium text-muted-foreground mb-1">High-Risk Merchants</p>
-          <h3 className="text-3xl font-bold tracking-tight">24</h3>
+          <h3 className="text-3xl font-bold tracking-tight">{stats.high_risk_merchants}</h3>
         </motion.div>
 
         <motion.div whileHover={{ y: -4 }} className="bg-card border border-border p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
@@ -81,7 +98,7 @@ export default function ExecutiveDashboard() {
             <span className="text-xs font-semibold text-success bg-success/10 px-2.5 py-1 rounded-full">v2.1</span>
           </div>
           <p className="text-sm font-medium text-muted-foreground mb-1">AI Model Accuracy</p>
-          <h3 className="text-3xl font-bold tracking-tight">99.97%</h3>
+          <h3 className="text-3xl font-bold tracking-tight">{stats.model_accuracy.toFixed(2)}%</h3>
         </motion.div>
       </div>
 
@@ -97,7 +114,7 @@ export default function ExecutiveDashboard() {
           </div>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={stats.monthlyTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
@@ -131,7 +148,7 @@ export default function ExecutiveDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={riskDistribution}
+                  data={stats.riskDistribution}
                   cx="50%"
                   cy="50%"
                   innerRadius={70}
@@ -141,7 +158,7 @@ export default function ExecutiveDashboard() {
                   stroke="none"
                   cornerRadius={4}
                 >
-                  {riskDistribution.map((entry, index) => (
+                  {stats.riskDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -158,7 +175,7 @@ export default function ExecutiveDashboard() {
           </div>
           
           <div className="mt-6 grid grid-cols-2 gap-4">
-            {riskDistribution.map((item, i) => (
+            {stats.riskDistribution.map((item, i) => (
               <div key={i} className="flex justify-between items-center text-sm p-3 bg-muted/50 rounded-xl">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></span>

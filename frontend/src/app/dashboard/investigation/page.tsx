@@ -4,27 +4,36 @@ import { motion } from "framer-motion";
 import { ShieldAlert, CheckCircle, XCircle, PauseCircle, Clock, MapPin, Monitor, CreditCard, Activity, ArrowRight, User, Building, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+
 export default function InvestigationWorkspace() {
-  // Mock Data
-  const alert = {
-    id: "ALRT-8842",
-    transaction_id: "TRX-9982",
-    amount: "$4,500.00",
-    time: "2026-07-06 14:32:01",
-    status: "Investigating",
-    risk_score: 98,
-    risk_level: "Critical",
-    confidence: 96.5,
-    customer: { id: "CUST-9921", name: "John Doe", risk: 85, history: "High risk profile" },
-    merchant: { id: "MERCH-AMZ", name: "CryptoEx", risk: 12.4, category: "Cryptocurrency" },
-    device: { type: "Desktop", os: "Windows 11", browser: "Chrome 120", ip: "104.21.44.22", location: "Russia" },
-    reasons: [
-      "Transaction amount ($4,500.00) is significantly higher than customer's average ($500.00).",
-      "Payment initiated from a new or unrecognized device.",
-      "Transaction originated from a high-risk geographic location (Russia).",
-      "Merchant has a high historical fraud rate (12.4%)."
-    ]
-  };
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const res = await api.get('/investigations');
+        setAlerts(res.data);
+      } catch (err) {
+        console.error("Failed to load alerts", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAlerts();
+  }, []);
+
+  if (loading) {
+    return <div className="flex h-96 items-center justify-center text-muted-foreground animate-pulse">Loading Live Investigations...</div>;
+  }
+
+  if (alerts.length === 0) {
+    return <div className="flex h-96 items-center justify-center text-muted-foreground">No alerts require investigation.</div>;
+  }
+
+  const alert = alerts[0]; // Pick the first alert for the workspace view
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-10">
@@ -87,7 +96,7 @@ export default function InvestigationWorkspace() {
 
             <div className="space-y-4 relative z-10">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Rule-Based Explanations</h3>
-              {alert.reasons.map((reason, idx) => (
+              {alert.reasons.map((reason: string, idx: number) => (
                 <div key={idx} className="flex gap-4 items-start bg-card/80 p-4 rounded-xl border border-border/50 shadow-sm">
                   <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                   <p className="text-sm font-medium leading-relaxed">{reason}</p>

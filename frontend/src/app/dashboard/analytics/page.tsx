@@ -8,23 +8,23 @@ import {
 } from 'recharts';
 import { cn } from "@/lib/utils";
 
-const customerData = [
-  { age: '18-24', count: 120, fraud: 15 },
-  { age: '25-34', count: 450, fraud: 45 },
-  { age: '35-44', count: 320, fraud: 20 },
-  { age: '45-54', count: 210, fraud: 10 },
-  { age: '55+', count: 90, fraud: 2 },
-];
-
-const merchantData = [
-  { name: 'Amazon', volume: 45000, fraudRate: 0.2 },
-  { name: 'Apple', volume: 38000, fraudRate: 0.1 },
-  { name: 'Walmart', volume: 22000, fraudRate: 0.5 },
-  { name: 'Unknown', volume: 5000, fraudRate: 4.8 },
-  { name: 'CryptoEx', volume: 15000, fraudRate: 8.5 },
-];
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 
 export default function AnalyticsPage() {
+  const [data, setData] = useState<{
+    customerData: any[],
+    merchantData: any[],
+    heatmapData: any[]
+  } | null>(null);
+
+  useEffect(() => {
+    api.get("/system/analytics").then(res => setData(res.data)).catch(err => console.error(err));
+  }, []);
+
+  if (!data) {
+    return <div className="flex h-96 items-center justify-center text-muted-foreground animate-pulse">Loading Analytics Data...</div>;
+  }
   return (
     <div className="space-y-6">
       <div className="mb-8">
@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
           
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={customerData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+              <BarChart data={data.customerData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" opacity={0.5} />
                 <XAxis dataKey="age" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
@@ -70,7 +70,7 @@ export default function AnalyticsPage() {
           
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={merchantData} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 0 }}>
+              <ComposedChart data={data.merchantData} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#1e293b" opacity={0.5} />
                 <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
@@ -105,34 +105,21 @@ export default function AnalyticsPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border">
-                <td className="px-4 py-4 font-medium">North America</td>
-                <td className="px-4 py-4">$4.2M</td>
-                <td className="px-4 py-4">124</td>
-                <td className="px-4 py-4"><span className="text-success font-medium">Low</span></td>
-                <td className="px-4 py-4"><TrendingDown className="w-4 h-4 text-success" /></td>
-              </tr>
-              <tr className="border-b border-border">
-                <td className="px-4 py-4 font-medium">Europe</td>
-                <td className="px-4 py-4">$2.8M</td>
-                <td className="px-4 py-4">98</td>
-                <td className="px-4 py-4"><span className="text-success font-medium">Low</span></td>
-                <td className="px-4 py-4"><TrendingDown className="w-4 h-4 text-success" /></td>
-              </tr>
-              <tr className="border-b border-border">
-                <td className="px-4 py-4 font-medium">Eastern Europe</td>
-                <td className="px-4 py-4">$850K</td>
-                <td className="px-4 py-4">342</td>
-                <td className="px-4 py-4"><span className="text-destructive font-medium">High</span></td>
-                <td className="px-4 py-4"><TrendingUp className="w-4 h-4 text-destructive" /></td>
-              </tr>
-              <tr className="border-b border-border bg-destructive/5">
-                <td className="px-4 py-4 font-medium">High-Risk IP Zones</td>
-                <td className="px-4 py-4">$120K</td>
-                <td className="px-4 py-4">450</td>
-                <td className="px-4 py-4"><span className="text-destructive font-bold">Critical</span></td>
-                <td className="px-4 py-4"><TrendingUp className="w-4 h-4 text-destructive" /></td>
-              </tr>
+              {data.heatmapData.map((row, idx) => (
+                <tr key={idx} className={cn("border-b border-border", row.risk === "Critical" ? "bg-destructive/5" : "")}>
+                  <td className="px-4 py-4 font-medium">{row.region}</td>
+                  <td className="px-4 py-4">{row.volume}</td>
+                  <td className="px-4 py-4">{row.attempts}</td>
+                  <td className="px-4 py-4">
+                    <span className={cn("font-medium", row.risk === "Low" ? "text-success" : row.risk === "High" ? "text-destructive" : "text-destructive font-bold")}>
+                      {row.risk}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    {row.trend === "up" ? <TrendingUp className="w-4 h-4 text-destructive" /> : <TrendingDown className="w-4 h-4 text-success" />}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Cookies from "js-cookie";
+import { api } from "@/lib/api";
 import axios from "axios";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({ username: "admin", password: "password123" });
+  const [formData, setFormData] = useState({ username: "admin", password: "admin123" });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,8 +25,13 @@ export default function LoginPage() {
       params.append("username", formData.username);
       params.append("password", formData.password);
 
-      const res = await axios.post("http://localhost:8000/api/v1/auth/login", params);
+      const res = await axios.post("http://localhost:8000/api/v1/auth/login", params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
       localStorage.setItem("token", res.data.access_token);
+      Cookies.set("token", res.data.access_token, { expires: 1 }); // 1 day expiry
       
       // Artificial delay for animation
       setTimeout(() => {

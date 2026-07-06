@@ -7,25 +7,26 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell
 } from 'recharts';
 
-const featureImportance = [
-  { name: 'Amount', value: 85 },
-  { name: 'Location', value: 72 },
-  { name: 'Time of Day', value: 68 },
-  { name: 'Device Type', value: 55 },
-  { name: 'Customer Age', value: 45 },
-  { name: 'Payment Method', value: 38 },
-];
-
-const modelComparison = [
-  { subject: 'Accuracy', XGBoost: 94, RandomForest: 91, LogisticRegression: 78, fullMark: 100 },
-  { subject: 'Precision', XGBoost: 92, RandomForest: 88, LogisticRegression: 72, fullMark: 100 },
-  { subject: 'Recall', XGBoost: 89, RandomForest: 84, LogisticRegression: 65, fullMark: 100 },
-  { subject: 'F1 Score', XGBoost: 90, RandomForest: 86, LogisticRegression: 68, fullMark: 100 },
-  { subject: 'AUC-ROC', XGBoost: 96, RandomForest: 93, LogisticRegression: 81, fullMark: 100 },
-  { subject: 'Speed', XGBoost: 85, RandomForest: 75, LogisticRegression: 98, fullMark: 100 },
-];
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 
 export default function MachineLearningPage() {
+  const [data, setData] = useState<{
+    active_model: string;
+    f1_score: number;
+    precision: number;
+    training_data: string;
+    featureImportance: any[];
+    modelComparison: any[];
+  } | null>(null);
+
+  useEffect(() => {
+    api.get("/system/ml-metrics").then(res => setData(res.data)).catch(err => console.error(err));
+  }, []);
+
+  if (!data) {
+    return <div className="flex h-96 items-center justify-center text-muted-foreground animate-pulse">Loading ML Metrics...</div>;
+  }
   return (
     <div className="space-y-6">
       <div className="mb-8 flex justify-between items-center">
@@ -47,7 +48,7 @@ export default function MachineLearningPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Active Model</p>
-            <p className="text-lg font-bold">XGBoost-V4</p>
+            <p className="text-lg font-bold">{data.active_model}</p>
           </div>
         </div>
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm flex items-center gap-4">
@@ -56,7 +57,7 @@ export default function MachineLearningPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">F1 Score</p>
-            <p className="text-lg font-bold">0.902</p>
+            <p className="text-lg font-bold">{data.f1_score}</p>
           </div>
         </div>
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm flex items-center gap-4">
@@ -65,7 +66,7 @@ export default function MachineLearningPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Precision</p>
-            <p className="text-lg font-bold">92.4%</p>
+            <p className="text-lg font-bold">{data.precision}%</p>
           </div>
         </div>
         <div className="bg-card border border-border rounded-xl p-6 shadow-sm flex items-center gap-4">
@@ -74,7 +75,7 @@ export default function MachineLearningPage() {
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Training Data</p>
-            <p className="text-lg font-bold">2.4M rows</p>
+            <p className="text-lg font-bold">{data.training_data} rows</p>
           </div>
         </div>
       </div>
@@ -88,7 +89,7 @@ export default function MachineLearningPage() {
           <h3 className="text-lg font-bold mb-6">Model Comparison Analysis</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={modelComparison}>
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.modelComparison}>
                 <PolarGrid stroke="#1e293b" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 12 }} />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#64748b" />
@@ -118,13 +119,13 @@ export default function MachineLearningPage() {
           <h3 className="text-lg font-bold mb-6">SHAP Feature Importance</h3>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart layout="vertical" data={featureImportance} margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
+              <BarChart layout="vertical" data={data.featureImportance} margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#1e293b" opacity={0.5} />
                 <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                 <RechartsTooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }} />
                 <Bar dataKey="value" fill="#2563EB" radius={[0, 4, 4, 0]} barSize={20}>
-                  {featureImportance.map((entry, index) => (
+                  {data.featureImportance.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={index === 0 ? '#EF4444' : index === 1 ? '#F59E0B' : '#2563EB'} />
                   ))}
                 </Bar>
