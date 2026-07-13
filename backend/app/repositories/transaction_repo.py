@@ -41,7 +41,7 @@ class TransactionRepository:
             risk_level=decision_result["risk_level"],
             recommendation=decision_result["decision"],
             confidence=decision_result["confidence"],
-            rule_explanations=" | ".join(decision_result["explanations"])
+            rule_explanations=" | ".join(decision_result.get("reasons", []))
         )
         self.db.add(db_prediction)
         

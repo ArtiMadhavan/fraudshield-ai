@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ShieldCheck, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Cookies from "js-cookie";
 import { api } from "@/lib/api";
 import axios from "axios";
@@ -48,28 +49,21 @@ export default function LoginPage() {
       
       {/* Left Panel - Branding & Animation */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-secondary border-r border-border items-center justify-center">
-        {/* Animated Background Mesh */}
-        <div className="absolute inset-0 z-0 opacity-40 mix-blend-screen">
-           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/40 rounded-full filter blur-[120px] animate-pulse"></div>
-           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-500/30 rounded-full filter blur-[120px] animate-pulse" style={{ animationDelay: "2s" }}></div>
-        </div>
+        <div className="absolute inset-0 z-0 bg-slate-100 mix-blend-multiply"></div>
         
         <div className="relative z-10 p-12 max-w-lg text-center">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="w-20 h-20 bg-white rounded-2xl mx-auto flex items-center justify-center mb-8 shadow-xl shadow-slate-200/50"
           >
-            <div className="bg-card/50 backdrop-blur-xl p-8 rounded-3xl border border-border shadow-2xl">
-              <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/30">
-                <ShieldCheck className="w-8 h-8" />
-              </div>
-              <h1 className="text-3xl font-bold text-foreground mb-4">FraudShield AI</h1>
-              <p className="text-muted-foreground leading-relaxed">
-                Enterprise payment fraud prevention powered by state-of-the-art machine learning models. Secure, scalable, and intelligent.
-              </p>
-            </div>
+            <Image src="/logo.png" alt="FraudShield Logo" width={64} height={64} className="rounded-xl" />
           </motion.div>
+          <h1 className="text-4xl font-bold mb-4 tracking-tight text-slate-800">FraudShield AI</h1>
+          <p className="text-muted-foreground leading-relaxed">
+            Enterprise payment fraud prevention powered by state-of-the-art machine learning models. Secure, scalable, and intelligent.
+          </p>
         </div>
       </div>
 
@@ -153,7 +147,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center mt-8 text-sm text-muted-foreground">
-            Don&apos;t have an account? <Link href="#" className="text-primary font-medium hover:underline">Request Access</Link>
+            Don&apos;t have an account? <Link href="/register" className="text-primary font-medium hover:underline">Register Now</Link>
           </p>
         </motion.div>
       </div>

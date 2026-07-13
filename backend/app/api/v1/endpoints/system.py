@@ -89,8 +89,53 @@ def get_analytics(db: Session = Depends(get_db)):
         "heatmapData": heatmapData
     }
 
+import subprocess
+from app.models.models import MLModel
+
+@router.post("/train-model")
+def retrain_ml_model(db: Session = Depends(get_db)):
+    script_path = os.path.join(os.path.dirname(__file__), "../../../../ml_engine/train_model.py")
+    try:
+        result = subprocess.run(["python", script_path], capture_output=True, text=True, check=True)
+        return {"status": "success", "message": "Model retrained successfully", "logs": result.stdout}
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Training failed: {e.stderr}")
+
 @router.get("/ml-metrics")
 def get_ml_metrics(db: Session = Depends(get_db)):
+    # Fetch active model from DB
+    active_model = db.query(MLModel).filter(MLModel.is_active == True).first()
+    
+    if not active_model:
+        # Fallback to simulated if no model is trained yet
+        return get_simulated_ml_metrics()
+        
+    import json
+    try:
+        metrics = json.loads(active_model.metrics) if isinstance(active_model.metrics, str) else active_model.metrics
+    except:
+        metrics = {"F1 Score": 0, "Precision": 0, "Accuracy": 0, "Recall": 0, "ROC-AUC": 0}
+
+    # Extract model name from version ID (e.g. decision_tree_2026...)
+    model_name = active_model.version.split('_202')[0].replace('_', ' ').title() if active_model.version else "Unknown Model"
+
+    modelComparison = [
+        {"subject": "Accuracy", "ActiveModel": metrics.get("accuracy", 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "Precision", "ActiveModel": metrics.get("precision", 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "Recall", "ActiveModel": metrics.get("recall", 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "F1 Score", "ActiveModel": metrics.get("f1_score", 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "ROC-AUC", "ActiveModel": metrics.get("roc_auc", 0) * 100, "Baseline": 50, "fullMark": 100},
+    ]
+
+    return {
+        "active_model": model_name,
+        "f1_score": round(metrics.get("f1_score", 0), 4),
+        "precision": round(metrics.get("precision", 0) * 100, 2),
+        "training_data": "10,000",
+        "modelComparison": modelComparison
+    }
+
+def get_simulated_ml_metrics():
     # Simulating ML performance metrics and feature importance
     featureImportance = [
         {"name": "Amount", "value": 85},
@@ -111,7 +156,7 @@ def get_ml_metrics(db: Session = Depends(get_db)):
     ]
 
     return {
-        "active_model": "XGBoost-V4",
+        "active_model": "XGBoost-V4 (Simulated)",
         "f1_score": 0.902,
         "precision": 92.4,
         "training_data": "2.4M",

@@ -1,15 +1,14 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime
 
-# --- Merged from root schemas.py ---
 class UserBase(BaseModel):
     username: str
     email: EmailStr
 
 class UserCreate(UserBase):
     password: str
-    role: Optional[str] = "fraud_analyst"
+    role: Optional[str] = "customer"
 
 class UserResponse(UserBase):
     id: int
@@ -18,39 +17,9 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
-class TransactionCreate(BaseModel):
-    amount: float
-    currency: Optional[str] = "USD"
-    payment_method: str
-    device: str
-    browser: str
-    os: str
-    location: str
-    ip_address: str
-    transaction_type: str
-    customer_age_days: Optional[int] = 30 # Default for simulation
-
-class FraudPredictionResponse(BaseModel):
-    transaction_id: str
-    risk_score: float
-    risk_level: str
-    recommendation: str
-    confidence: float
-    explanation: str
-
-class TransactionResponse(BaseModel):
-    id: int
-    transaction_id: str
-    amount: float
-    status: str
-    prediction: Optional[FraudPredictionResponse] = None
-    created_at: datetime
-    class Config:
-        from_attributes = True
-
-# --- Original nested schemas.py ---
 class Token(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str
 
 class UserLogin(BaseModel):
@@ -73,11 +42,59 @@ class TransactionRequest(BaseModel):
 class PredictionResponse(BaseModel):
     decision: str
     risk_score: float
-    risk_level: str
+    fraud_probability: float
     confidence: float
-    explanations: List[str]
+    risk_level: str
+    reasons: List[str]
+    recommendation: str
+    transaction_id: Optional[str] = None
+    status: Optional[str] = None
+
+class CustomerResponse(BaseModel):
+    id: int
+    customer_id: str
+    name: str
+    email: str
+    kyc_status: str
+    credit_score: int
+    wallet_balance: float
+    risk_score: float
+    monthly_spend: float
+    average_monthly_spend: float
+    clv: float
+    device_history: Optional[str] = None
+    location_history: Optional[str] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class MerchantResponse(BaseModel):
+    id: int
+    merchant_id: str
+    name: str
+    category: str
+    countries: Optional[str] = None
+    total_revenue: float
+    settlement_status: str
+    chargeback_percentage: float
+    fraud_percentage: float
+    risk_level: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class TransactionResponse(BaseModel):
+    id: int
     transaction_id: str
+    amount: float
+    currency: str
+    payment_method: str
     status: str
+    created_at: datetime
+    customer: Optional[CustomerResponse] = None
+    merchant: Optional[MerchantResponse] = None
+    class Config:
+        from_attributes = True
 
 class DashboardKPIs(BaseModel):
     total_transactions: int
@@ -88,3 +105,7 @@ class DashboardKPIs(BaseModel):
     high_risk_customers: int
     avg_transaction_value: float
     model_accuracy: float
+    approval_rate: float
+    active_analysts: int
+    active_merchants: int
+    active_customers: int

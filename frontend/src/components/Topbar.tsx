@@ -1,48 +1,64 @@
 "use client";
 
-import { Bell, Search, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Bell, Search, Moon, Menu, Activity } from "lucide-react";
+import Image from "next/image";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { cn } from "@/lib/utils";
 
 export default function Topbar() {
-  const [isDark, setIsDark] = useState(true);
+  const [notifications, setNotifications] = useState(3);
+  const { lastMessage, isConnected } = useWebSocket("ws://localhost:8000/ws");
 
-  // Sync theme with HTML class
   useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+    if (lastMessage?.type === "NEW_ALERT") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setNotifications(prev => prev + 1);
     }
-  }, [isDark]);
+  }, [lastMessage]);
 
   return (
-    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
-      <div className="flex items-center flex-1">
+    <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
+      <div className="flex items-center flex-1 gap-4">
+        <button className="p-2 -ml-2 rounded-lg hover:bg-slate-50 text-slate-500 transition-colors">
+          <Menu className="w-5 h-5" />
+        </button>
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search transactions, customers..." 
-            className="w-full bg-muted border-none rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-foreground"
+            placeholder="Search anything..." 
+            className="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-slate-900 placeholder:text-slate-400"
           />
         </div>
       </div>
       
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => setIsDark(!isDark)}
-          className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors"
-        >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
-        
-        <button className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors relative">
+      <div className="flex items-center gap-5">
+        <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-bold border", isConnected ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-slate-50 text-slate-400 border-slate-200")}>
+          <Activity className="w-3 h-3" />
+          {isConnected ? "LIVE" : "OFFLINE"}
+        </div>
+        <button className="relative p-2 rounded-full hover:bg-slate-50 text-slate-500 transition-colors">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-2 w-2 h-2 bg-destructive rounded-full border-2 border-card"></span>
+          {notifications > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+              {notifications > 9 ? "9+" : notifications}
+            </span>
+          )}
         </button>
         
-        <div className="h-8 w-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center overflow-hidden cursor-pointer">
-          <span className="text-primary font-bold text-sm">AD</span>
+        <button className="p-2 rounded-full hover:bg-slate-50 text-slate-500 transition-colors">
+          <Moon className="w-5 h-5" />
+        </button>
+        
+        <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+          <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm overflow-hidden">
+             AS
+          </div>
+          <div className="hidden md:block">
+            <p className="text-sm font-bold text-slate-900 leading-none">Aarav Singh</p>
+            <p className="text-xs text-slate-500 mt-1">Risk Manager</p>
+          </div>
         </div>
       </div>
     </header>

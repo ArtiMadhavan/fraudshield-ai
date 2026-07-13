@@ -1,231 +1,229 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ShieldAlert, CheckCircle, XCircle, PauseCircle, Clock, MapPin, Monitor, CreditCard, Activity, ArrowRight, User, Building, AlertTriangle } from "lucide-react";
-import { cn } from "@/lib/utils";
-
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { 
+  flexRender, 
+  getCoreRowModel, 
+  getSortedRowModel, 
+  useReactTable, 
+  SortingState 
+} from "@tanstack/react-table";
+import { ShieldAlert, ArrowUpDown, ChevronLeft, ChevronRight, X, CheckCircle, XCircle, PauseCircle } from "lucide-react";
 
 export default function InvestigationWorkspace() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [selectedAlert, setSelectedAlert] = useState<any | null>(null);
+
+  const fetchAlerts = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/investigations');
+      setAlerts(res.data);
+    } catch (err) {
+      console.error("Failed to load alerts", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const res = await api.get('/investigations');
-        setAlerts(res.data);
-      } catch (err) {
-        console.error("Failed to load alerts", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAlerts();
   }, []);
 
-  if (loading) {
-    return <div className="flex h-96 items-center justify-center text-muted-foreground animate-pulse">Loading Live Investigations...</div>;
-  }
+  const handleUpdateStatus = async (alertId: number, status: string) => {
+    try {
+      await api.put(`/investigations/${alertId}`, { status, analyst_notes: "Updated from workspace" });
+      setSelectedAlert(null);
+      fetchAlerts();
+    } catch (err) {
+      console.error("Failed to update status", err);
+    }
+  };
 
-  if (alerts.length === 0) {
-    return <div className="flex h-96 items-center justify-center text-muted-foreground">No alerts require investigation.</div>;
-  }
+  const columns = [
+    {
+      accessorKey: "transaction_id",
+      header: "Transaction ID",
+      cell: ({ row }: any) => <span className="font-mono text-xs">{row.original.transaction_id}</span>,
+    },
+    {
+      accessorKey: "risk_level",
+      header: ({ column }: any) => (
+        <button className="flex items-center gap-1" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          Risk <ArrowUpDown className="w-3 h-3" />
+        </button>
+      ),
+      cell: ({ row }: any) => {
+        const r = row.original.risk_level;
+        const color = r === "Critical" ? "text-red-600 bg-red-100" : r === "High" ? "text-amber-600 bg-amber-100" : "text-blue-600 bg-blue-100";
+        return <span className={`px-2 py-1 rounded text-xs font-semibold ${color}`}>{r}</span>;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }: any) => {
+        return <span className="px-2 py-1 bg-slate-100 border border-slate-200 rounded text-xs font-semibold text-slate-700">{row.original.status}</span>;
+      },
+    },
+    {
+      accessorKey: "time",
+      header: "Time",
+      cell: ({ row }: any) => <span className="text-xs text-slate-500">{row.original.time}</span>,
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }: any) => (
+        <button 
+          onClick={() => setSelectedAlert(row.original)}
+          className="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors">
+          Investigate
+        </button>
+      )
+    }
+  ];
 
-  const alert = alerts[0]; // Pick the first alert for the workspace view
+  const table = useReactTable({
+    data: alerts,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    state: {
+      sorting,
+    },
+  });
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto pb-10">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 pb-6 border-b border-border/50 gap-6">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Investigation Workspace</h1>
-            <span className="bg-destructive/15 text-destructive text-xs font-bold px-3 py-1.5 rounded-md uppercase tracking-wider shadow-sm">
-              {alert.risk_level} Risk
-            </span>
-          </div>
-          <p className="text-muted-foreground font-medium">Alert ID: {alert.id} • Transaction: {alert.transaction_id}</p>
-        </div>
-        <div className="flex gap-3 w-full lg:w-auto">
-          <button className="flex-1 lg:flex-none bg-success text-success-foreground px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:bg-success/90 shadow-sm shadow-success/20">
-            <CheckCircle className="w-4 h-4" /> Approve
-          </button>
-          <button className="flex-1 lg:flex-none bg-destructive text-destructive-foreground px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:bg-destructive/90 shadow-sm shadow-destructive/20">
-            <XCircle className="w-4 h-4" /> Reject
-          </button>
-          <button className="flex-1 lg:flex-none bg-secondary text-secondary-foreground border border-border px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:bg-muted shadow-sm">
-            <PauseCircle className="w-4 h-4" /> Freeze
-          </button>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Investigation Workspace</h1>
+          <p className="text-sm text-slate-500 font-medium">Review and resolve active fraud alerts.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column: AI Decision Engine Output */}
-        <div className="xl:col-span-2 space-y-8">
-          <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-8 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-destructive/10 rounded-full blur-[100px] pointer-events-none"></div>
-            
-            <div className="flex items-center gap-3 mb-8 relative z-10">
-              <div className="p-2.5 bg-destructive/15 rounded-xl text-destructive">
-                <ShieldAlert className="w-6 h-6" />
-              </div>
-              <h2 className="text-xl font-bold tracking-tight">AI Decision Engine Analysis</h2>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-6 mb-8 relative z-10">
-              <div className="bg-card border border-border/50 p-5 rounded-xl shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Risk Score</p>
-                <div className="flex items-end gap-1">
-                   <p className="text-4xl font-bold tracking-tight text-destructive">{alert.risk_score}</p>
-                   <p className="text-sm font-medium text-muted-foreground mb-1">/100</p>
-                </div>
-              </div>
-              <div className="bg-card border border-border/50 p-5 rounded-xl shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">ML Confidence</p>
-                <div className="flex items-end gap-1">
-                   <p className="text-4xl font-bold tracking-tight">{alert.confidence}</p>
-                   <p className="text-sm font-medium text-muted-foreground mb-1">%</p>
-                </div>
-              </div>
-              <div className="bg-card border border-border/50 p-5 rounded-xl shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Action Taken</p>
-                <p className="text-2xl font-bold tracking-tight text-destructive mt-1">BLOCKED</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 relative z-10">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Rule-Based Explanations</h3>
-              {alert.reasons.map((reason: string, idx: number) => (
-                <div key={idx} className="flex gap-4 items-start bg-card/80 p-4 rounded-xl border border-border/50 shadow-sm">
-                  <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-                  <p className="text-sm font-medium leading-relaxed">{reason}</p>
-                </div>
-              ))}
-            </div>
+      <div className="bg-white border border-slate-200 rounded-[18px] shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="h-64 flex items-center justify-center text-slate-400 font-medium">Loading alerts...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id} className="bg-slate-50 border-b border-slate-100">
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id} className="px-5 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-5 py-3">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Transaction Details */}
-          <div className="bg-card border border-border rounded-2xl p-8 shadow-sm">
-            <h2 className="text-lg font-bold mb-8 tracking-tight">Transaction Context</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-              <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                   <CreditCard className="w-5 h-5 text-foreground" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Amount & Method</p>
-                  <p className="font-bold text-lg text-foreground">{alert.amount}</p>
-                  <p className="text-sm text-muted-foreground">Credit Card (*4242)</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                   <Clock className="w-5 h-5 text-foreground" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Timestamp</p>
-                  <p className="font-bold text-lg text-foreground">{alert.time}</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                   <MapPin className="w-5 h-5 text-foreground" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Location & IP</p>
-                  <p className="font-bold text-lg text-destructive">{alert.device.location}</p>
-                  <p className="text-sm text-muted-foreground font-mono">{alert.device.ip}</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                   <Monitor className="w-5 h-5 text-foreground" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Device Fingerprint</p>
-                  <p className="font-bold text-lg text-foreground">{alert.device.os}</p>
-                  <p className="text-sm text-muted-foreground">{alert.device.browser} <span className="text-destructive font-semibold ml-1">• New Device</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: 360 Profiles */}
-        <div className="space-y-6">
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                 <User className="w-5 h-5" />
-              </div>
-              <h2 className="font-bold text-lg tracking-tight">Customer Profile</h2>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Name</p>
-                <p className="font-bold text-lg">{alert.customer.name}</p>
-                <p className="text-sm text-muted-foreground">{alert.customer.id}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Historical Risk Profile</p>
-                <div className="w-full bg-secondary rounded-full h-2.5 mt-2 overflow-hidden border border-border/50">
-                  <div className="bg-destructive h-full rounded-full relative" style={{ width: `${alert.customer.risk}%` }}></div>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                   <span className="text-xs text-muted-foreground font-medium">Risk Score</span>
-                   <p className="text-sm text-destructive font-bold">{alert.customer.risk}/100</p>
-                </div>
-              </div>
-              <button className="w-full bg-secondary hover:bg-muted text-foreground font-medium py-2.5 rounded-xl text-sm transition-colors border border-border shadow-sm flex items-center justify-center gap-2 mt-2">
-                View 360° Profile <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
-              <div className="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center text-warning">
-                 <Building className="w-5 h-5" />
-              </div>
-              <h2 className="font-bold text-lg tracking-tight">Merchant Profile</h2>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Merchant Name</p>
-                <p className="font-bold text-lg">{alert.merchant.name}</p>
-                <p className="text-sm text-muted-foreground">{alert.merchant.category}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Fraud Chargeback Rate</p>
-                <div className="flex items-center gap-3 mt-1">
-                   <p className="text-3xl font-bold tracking-tight text-destructive">{alert.merchant.risk}%</p>
-                   <p className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded-md">Avg: 0.5%</p>
-                </div>
-              </div>
-              <button className="w-full bg-secondary hover:bg-muted text-foreground font-medium py-2.5 rounded-xl text-sm transition-colors border border-border shadow-sm flex items-center justify-center gap-2 mt-2">
-                View 360° Profile <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-             <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
-              <div className="w-10 h-10 bg-muted rounded-xl flex items-center justify-center text-foreground">
-                 <Activity className="w-5 h-5" />
-              </div>
-              <h2 className="font-bold text-lg tracking-tight">Analyst Notes</h2>
-            </div>
-            <textarea 
-              className="w-full bg-muted/50 border border-border rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none min-h-[140px] resize-none"
-              placeholder="Enter investigation notes here..."
-            ></textarea>
-            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 rounded-xl mt-4 transition-all text-sm shadow-md shadow-primary/20">
-              Save Notes
-            </button>
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* Slide-over Modal for Investigation Detail */}
+      {selectedAlert && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/20 backdrop-blur-sm transition-all">
+          <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Alert Details</h2>
+                  <p className="text-xs font-mono text-slate-500">{selectedAlert.transaction_id}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedAlert(null)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Risk Score</p>
+                   <p className={`text-2xl font-bold ${selectedAlert.risk_level === 'Critical' ? 'text-red-600' : 'text-amber-600'}`}>
+                     {selectedAlert.risk_score} <span className="text-sm font-medium text-slate-400">/100</span>
+                   </p>
+                 </div>
+                 <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">ML Confidence</p>
+                   <p className="text-2xl font-bold text-slate-900">{(selectedAlert.confidence * 100).toFixed(1)}%</p>
+                 </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 mb-3">Rule Triggers & Explanations</h3>
+                <div className="space-y-3">
+                  {selectedAlert.reasons?.map((reason: string, i: number) => (
+                    <div key={i} className="flex gap-3 items-start bg-amber-50/50 border border-amber-100 p-3 rounded-lg">
+                      <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                      <p className="text-sm font-medium text-slate-700">{reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 mb-3">Transaction Info</h3>
+                <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Amount</span>
+                    <span className="text-sm font-bold text-slate-900">{selectedAlert.amount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Time</span>
+                    <span className="text-sm font-medium text-slate-900">{selectedAlert.time}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Customer</span>
+                    <span className="text-sm font-medium text-indigo-600 cursor-pointer hover:underline">{selectedAlert.customer?.name}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-200 bg-slate-50/50 flex gap-3">
+               <button 
+                onClick={() => handleUpdateStatus(selectedAlert.id, "CLOSED")}
+                className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-200">
+                 <CheckCircle className="w-4 h-4" /> Approve
+               </button>
+               <button 
+                onClick={() => handleUpdateStatus(selectedAlert.id, "INVESTIGATING")}
+                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-red-700 transition-colors shadow-sm shadow-red-200">
+                 <XCircle className="w-4 h-4" /> Block
+               </button>
+               <button 
+                onClick={() => handleUpdateStatus(selectedAlert.id, "FROZEN")}
+                className="flex-1 bg-white border border-slate-300 text-slate-700 py-2.5 rounded-xl text-sm font-bold flex justify-center items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">
+                 <PauseCircle className="w-4 h-4" /> Freeze
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

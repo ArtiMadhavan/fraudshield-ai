@@ -1,124 +1,148 @@
-<div align="center">
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-check.svg" width="80" alt="FraudShield AI Logo" />
-  <h1 align="center">FraudShield AI (Enterprise v10.0)</h1>
-  <p align="center">
-    <strong>Enterprise-Grade Payment Fraud Prevention & AI Decision Engine</strong>
-  </p>
-  
-  <p align="center">
-    <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/FastAPI-0.104-009688?style=for-the-badge&logo=fastapi" alt="FastAPI" />
-    <img src="https://img.shields.io/badge/Scikit--Learn-1.3-F7931E?style=for-the-badge&logo=scikit-learn" alt="Scikit-Learn" />
-    <img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql" alt="MySQL" />
-    <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
-  </p>
-</div>
+# 🚀 FraudShield AI Enterprise
+
+**FraudShield AI** is an enterprise-inspired payment fraud detection platform built using modern full-stack technologies. It demonstrates real-world software architecture, machine learning integration, role-based authentication, analytics dashboards, and secure payment risk analysis.
 
 ---
 
-## 📖 Project Overview
+## 🌟 Features
 
-**FraudShield AI** is a production-ready enterprise payment fraud detection and transaction intelligence platform. Built using modern Full-Stack Development, Machine Learning, Business Intelligence, and Enterprise Software Engineering practices, this platform analyzes transactions in real-time, blocks fraudulent activity, and provides human-readable AI explanations for every decision.
+- **Enterprise UI/UX**: Premium, responsive interfaces built with Next.js, Tailwind CSS, shadcn/ui, and Framer Motion.
+- **Rule-Based Explainability AI**: Evaluates transactions instantly using Machine Learning alongside Business Rules, returning comprehensive human-readable reasons for decisions.
+- **Role-Based Access Control (RBAC)**: Secure access gating for Admins, Fraud Analysts, Risk Managers, and Customers using JWT and BCrypt.
+- **Real-Time Infrastructure**: WebSockets integration via FastAPI for instantaneous broadcasting of new transactions, alerts, and KPI updates without page refreshes.
+- **Admin Transaction Testing Console**: A dedicated interface (`/dashboard/upload`) for manually pushing JSON payloads and CSV batch files through the AI Decision Engine.
+- **Comprehensive Dashboards**: Executive, Fraud, Customer 360, Merchant 360, and Investigation Workspaces.
+- **Dockerized Deployments**: Pre-configured `Dockerfile`s, `render.yaml`, `vercel.json`, and `railway.json` for seamless cloud deployment.
 
-Developed as a comprehensive Final Year Project, it serves as a portfolio-ready demonstration of full-stack engineering, CI/CD, DevOps, and applied AI.
+---
 
-## ✨ Features
+## 🏗️ Enterprise Architecture
 
-- 🧠 **AI Decision Engine:** Real-time transaction scoring using dynamic Machine Learning pipelines (XGBoost, Random Forest, Decision Trees, Logistic Regression).
-- 🔍 **Rule-Based Explainability:** Human-readable reasoning for every AI decision based on velocity, location, and behavior.
-- 🔐 **Enterprise Security:** JWT Auth, Refresh Tokens, BCrypt hashing, and strict Role-Based Access Control (RBAC).
-- 🚀 **Real-Time WebSockets:** Live streaming of fraud alerts, new transactions, and system KPIs directly to the dashboard.
-- 📊 **360° Profiles:** Deep-dive intelligence into Customer behavior, Merchant risk, and historic timelines.
-- 🕵️ **Investigation Workspace:** Enterprise case management tools for fraud analysts.
-- 💳 **Payment Simulator:** End-to-end, live simulation of payments intercepted by the AI engine.
+FraudShield AI follows a clean, decoupled architecture:
+1. **Presentation Layer**: Next.js 15 (React 19) App Router handling SSR/SSG and client-side rendering.
+2. **API Layer**: FastAPI (Python) serving highly concurrent RESTful endpoints and WebSockets.
+3. **Service Layer**: Decoupled business logic (Transaction processing, ML inference, Alert generation).
+4. **Data Layer**: SQLAlchemy ORM integrating seamlessly with SQLite (Local) or MySQL/PostgreSQL (Production).
 
-## 🏗️ Architecture Diagram
-
+### Entity Relationship Diagram (ERD)
 ```mermaid
-flowchart TD
-  A[Customer Checkout] -->|Payment Details| B[Next.js Frontend]
-  B -->|REST API Request| C[FastAPI Backend]
-  C -->|Auth Validation| D[JWT Auth Module]
-  C -->|Feature Engineering| E[Data Preprocessing Pipeline]
-  E -->|Transaction Vectors| F[Machine Learning Models]
-  F -->|Anomaly Score| G[AI Decision Engine]
-  G -->|Explainability| H[Rule-Based Reasoner]
-  H -->|Final Verdict| I[(MySQL Database)]
-  I -->|WebSocket Broadcast| J[Live Analyst Dashboard]
+erDiagram
+    USERS ||--o{ FRAUD_ALERTS : investigates
+    CUSTOMERS ||--o{ TRANSACTIONS : initiates
+    MERCHANTS ||--o{ TRANSACTIONS : processes
+    TRANSACTIONS ||--|| FRAUD_PREDICTIONS : evaluated_by
+    TRANSACTIONS ||--o| FRAUD_ALERTS : triggers
 ```
+
+### Folder Structure
+```text
+FraudShield-AI/
+├── backend/                  # FastAPI Application
+│   ├── app/
+│   │   ├── api/              # REST Endpoints & WebSockets
+│   │   ├── auth/             # JWT & RBAC Logic
+│   │   ├── core/             # Config & Database Setup
+│   │   ├── models/           # SQLAlchemy Data Models
+│   │   ├── repositories/     # Data Access Layer
+│   │   └── services/         # Business Logic & Decision Engine
+│   ├── seed.py               # Enterprise Data Generator
+│   └── requirements.txt      # Python Dependencies
+├── frontend/                 # Next.js Application
+│   ├── src/
+│   │   ├── app/              # App Router Pages
+│   │   ├── components/       # Reusable UI Components
+│   │   ├── hooks/            # Custom React Hooks (WebSockets)
+│   │   └── lib/              # Utilities & API Clients
+│   └── package.json          # Node Dependencies
+├── ml_engine/                # Machine Learning Pipeline
+│   ├── notebooks/            # EDA Jupyter Notebooks
+│   ├── train_model.py        # Model Training Script
+│   └── models/               # Serialized .joblib Models
+├── tests/                    # Pytest Test Suite
+├── .github/workflows/        # CI/CD Pipelines
+└── docker-compose.yml        # Docker Orchestration
+```
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** Next.js 14 (App Router), React, TailwindCSS, Framer Motion, Recharts.
-- **Backend:** FastAPI, Uvicorn, SQLAlchemy (ORM), JWT, WebSockets.
-- **Machine Learning:** Scikit-Learn, XGBoost, Pandas, Joblib.
-- **Database:** MySQL 8.0 (Production), SQLite (Local Dev).
-- **DevOps:** Docker, Docker Compose, GitHub Actions (CI/CD), Vercel, Render.
+**Frontend**
+- Next.js 15 (App Router), React 19, TypeScript
+- Tailwind CSS, shadcn/ui, Framer Motion, Recharts, TanStack Table
 
-## 📂 Folder Structure
+**Backend**
+- Python 3.11, FastAPI, Uvicorn, WebSockets
+- SQLAlchemy, SQLite / MySQL, PyJWT, Passlib, Pydantic
 
-```
-FraudShield-AI/
-├── backend/               # FastAPI Application
-│   ├── app/               # Core Application (API, Models, Services)
-│   ├── ml_engine/         # Machine Learning Pipelines
-│   ├── tests/             # Pytest Suites
-│   ├── Dockerfile         # Backend Container
-│   └── requirements.txt   # Python Dependencies
-├── frontend/              # Next.js Application
-│   ├── src/app/           # App Router & Pages
-│   ├── src/components/    # Reusable React UI
-│   ├── Dockerfile         # Frontend Container
-│   └── package.json       # NPM Dependencies
-├── database/              # DB Initialization Scripts
-├── .github/workflows/     # GitHub Actions CI/CD
-├── docker-compose.yml     # Local Orchestration
-└── README.md
-```
+**Machine Learning**
+- Scikit-learn, XGBoost, Pandas, NumPy, Joblib
 
-## 💻 Installation & Setup
+**DevOps & Deployment**
+- Docker & Docker Compose
+- GitHub Actions (CI)
+- Vercel (Frontend), Render/Railway (Backend)
 
-A convenient batch script is provided for Windows users to automatically setup a fresh environment.
+---
 
+## 🚀 Deployment Guide
+
+### Prerequisites
+- Node.js 20+
+- Python 3.10+
+- Docker (optional)
+
+### 1. Local Development (Without Docker)
+
+**Backend Setup:**
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-username/fraudshield-ai.git
-cd fraudshield-ai
-
-# 2. Start the servers (Requires Node.js 20+ and Python 3.11+)
-.\start.bat
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python seed.py  # Generates 5000+ realistic enterprise records
+uvicorn app.main:app --reload --port 8000
 ```
-The script will automatically create the Python virtual environment, install all PIP and NPM dependencies, seed the initial database, and boot both servers.
-- Frontend Dashboard: `http://localhost:3000`
-- Backend API Docs: `http://localhost:8000/docs`
 
-## 🐳 Docker Setup
-
-To run the entire platform (MySQL, FastAPI, Next.js) inside isolated containers:
+**Frontend Setup:**
 ```bash
-docker-compose up -d --build
+cd frontend
+npm install
+npm run dev
 ```
 
-## ☁️ Deployment Guide
+### 2. Docker Compose (Production Ready)
+```bash
+docker-compose up --build -d
+```
+*Frontend will be available on `http://localhost:3000` and Backend on `http://localhost:8000`.*
 
-This repository includes Infrastructure-as-Code (IaC) files for zero-modification deployment.
-- **Frontend (Vercel):** Connect your GitHub repo to Vercel. It will auto-detect the `vercel.json` config.
-- **Backend (Render):** Connect your GitHub repo to Render using the `render.yaml` Blueprint.
-- **Database (Railway):** Provision a MySQL DB on Railway and inject the `DATABASE_URL` into Render.
+---
 
-## 🤖 ML Workflow
+## 🧪 Testing Instructions
+This project is built with test-driven robustness. To run the automated tests:
+```bash
+cd backend
+export PYTHONPATH=$(pwd)
+pytest ../tests/ -v
+```
 
-1. Data is loaded and cleaned from the SQL database.
-2. The `train_models.py` pipeline engineers features (Velocity, Geo-distance, Amounts).
-3. It trains four distinct models simultaneously.
-4. It compares Accuracy, F1, and ROC-AUC scores.
-5. The champion model is serialized via `joblib` and instantly hot-swapped into the running FastAPI instance.
+---
 
-## 🔮 Future Enhancements
+## 📚 API Documentation (Swagger)
+Once the backend is running, visit:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
 
-- Integrate external IP reputation API services (e.g., MaxMind).
-- Add two-factor authentication (2FA) for Fraud Analysts.
-- Implement graph databases (Neo4j) to detect fraud rings visually.
+### Core Endpoints
+- `POST /api/v1/auth/login` - Issue JWT token
+- `POST /api/v1/payments/upload` - Evaluate transactions via AI (JSON/CSV)
+- `GET /api/v1/dashboard/stats` - Fetch aggregate executive KPIs
+- `WS /ws` - WebSocket real-time event broadcast
 
-## 🛡️ License
-MIT License.
+---
+
+## 🛡️ Machine Learning Pipeline
+The `ml_engine/` directory contains scripts to synthetically generate millions of transaction rows, preprocess them, and train multiple models (`LogisticRegression`, `DecisionTree`, `RandomForest`, `XGBoost`). The champion model is selected via ROC-AUC scoring and exported as `fraud_model.joblib`.
+
+During inference, SHAP is avoided to ensure sub-100ms response times. Instead, a lightweight **Rule-Based Explainability Engine** maps model probabilities back to exact business logic rules.

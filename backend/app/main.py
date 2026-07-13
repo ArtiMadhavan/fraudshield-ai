@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import transactions, system, auth, dashboard, customers, merchants, investigations
+from app.api.v1.endpoints import transactions, system, auth, dashboard, customers, merchants, investigations, websockets
 from app.core.database import engine, Base
 
 # Create tables
@@ -29,6 +29,7 @@ app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboar
 app.include_router(customers.router, prefix="/api/v1/customers", tags=["Customers"])
 app.include_router(merchants.router, prefix="/api/v1/merchants", tags=["Merchants"])
 app.include_router(investigations.router, prefix="/api/v1/investigations", tags=["Investigations"])
+app.include_router(websockets.router, prefix="", tags=["WebSockets"])
 
 @app.get("/")
 def root():

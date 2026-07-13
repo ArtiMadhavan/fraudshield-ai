@@ -57,9 +57,9 @@ export default function PaymentFlow() {
 
     try {
       // Call backend API concurrently with animation
-      const response = await axios.post(`${API_BASE}/payments/process`, {
+      const response = await axios.post(`${API_BASE}/transactions/process`, {
         customer_id: "CUST-9921",
-        merchant_id: "MERCH-AAPL",
+        merchant_id: merchant,
         amount: parseFloat(amount),
         currency: "USD",
         payment_method: "Credit Card",
