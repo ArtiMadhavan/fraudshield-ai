@@ -1,19 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.core.database import get_db
-import psutil
+from app.models.models import Transaction, FraudPrediction, Customer, Merchant, MLModel
+from app.core.seeder import seed_indian_demo_data
 import os
-from fpdf import FPDF
-from datetime import datetime
 
 router = APIRouter()
 
 @router.get("/health")
 def get_system_health(db: Session = Depends(get_db)):
     try:
-        # Check DB connection
-        db.execute("SELECT 1")
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         db_status = "Healthy"
     except:
         db_status = "Disconnected"
@@ -22,66 +21,44 @@ def get_system_health(db: Session = Depends(get_db)):
         "status": "Operational" if db_status == "Healthy" else "Degraded",
         "backend_api": "Online",
         "database": db_status,
-        "ml_model": "Active (XGBoost/LR v1.0)",
-        "cpu_usage": f"{psutil.cpu_percent()}%",
-        "memory_usage": f"{psutil.virtual_memory().percent}%",
-        "uptime": "99.99%"
+        "ml_model": "Active (XGBoost/LR v1.0)"
     }
 
-@router.get("/reports/pdf/{report_type}")
-def generate_pdf_report(report_type: str, db: Session = Depends(get_db)):
-    if report_type not in ["executive", "fraud", "customers"]:
-        raise HTTPException(status_code=400, detail="Invalid report type")
-        
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=16)
-    pdf.cell(200, 10, txt=f"FraudShield AI - {report_type.capitalize()} Report", ln=True, align='C')
-    
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align='C')
-    
-    pdf.cell(200, 10, txt="Confidential and Proprietary Data", ln=True, align='L')
-    pdf.cell(200, 10, txt="---------------------------------------------------------", ln=True, align='L')
-    
-    # Mock data for demonstration
-    if report_type == "executive":
-        pdf.cell(200, 10, txt="Total Transactions Monitored: 1,432,590", ln=True, align='L')
-        pdf.cell(200, 10, txt="Total Fraud Prevented: $4,200,500.00", ln=True, align='L')
-        pdf.cell(200, 10, txt="AI Model Accuracy: 99.97%", ln=True, align='L')
-    
-    reports_dir = os.path.join(os.path.dirname(__file__), "../../../../reports")
-    os.makedirs(reports_dir, exist_ok=True)
-    file_path = os.path.join(reports_dir, f"{report_type}_report.pdf")
-    
-    pdf.output(file_path)
-    return FileResponse(path=file_path, filename=f"{report_type}_report.pdf", media_type='application/pdf')
+@router.post("/load-demo-data")
+def load_demo_data(db: Session = Depends(get_db)):
+    return seed_indian_demo_data(db)
 
 @router.get("/analytics")
 def get_analytics(db: Session = Depends(get_db)):
-    # Simulating DB analytics generation for customer demographics and merchant performance
+    # Group by merchant
+    merchants = db.query(
+        Merchant.name,
+        func.count(Transaction.id).label("volume"),
+        func.sum(Transaction.amount).label("revenue")
+    ).join(Transaction).group_by(Merchant.name).order_by(func.count(Transaction.id).desc()).limit(5).all()
+
+    merchantData = [
+        {"name": m.name, "volume": m.volume, "fraudRate": min(m.volume * 2, 25) } # Mocked fraud rate
+        for m in merchants
+    ]
+
+    # Group by state
+    states = db.query(
+        Transaction.state.label("region"),
+        func.sum(Transaction.amount).label("volume"),
+        func.count(Transaction.id).label("attempts")
+    ).group_by(Transaction.state).all()
+
+    heatmapData = [
+        {"region": s.region, "volume": f"₹{s.volume:,.2f}" if s.volume else "₹0.00", "attempts": s.attempts, "risk": "Low", "trend": "down"}
+        for s in states
+    ]
+
+    # Customer data
     customerData = [
         {"age": "18-24", "count": 120, "fraud": 15},
         {"age": "25-34", "count": 450, "fraud": 45},
-        {"age": "35-44", "count": 320, "fraud": 20},
-        {"age": "45-54", "count": 210, "fraud": 10},
-        {"age": "55+", "count": 90, "fraud": 2},
-    ]
-
-    merchantData = [
-        {"name": "Amazon", "volume": 45000, "fraudRate": 0.2},
-        {"name": "Apple", "volume": 38000, "fraudRate": 0.1},
-        {"name": "Walmart", "volume": 22000, "fraudRate": 0.5},
-        {"name": "CryptoEx", "volume": 15000, "fraudRate": 12.4},
-        {"name": "Unknown", "volume": 5000, "fraudRate": 4.8},
-    ]
-
-    heatmapData = [
-        {"region": "North America", "volume": "$4.2M", "attempts": 124, "risk": "Low", "trend": "down"},
-        {"region": "Europe", "volume": "$2.8M", "attempts": 98, "risk": "Low", "trend": "down"},
-        {"region": "Eastern Europe", "volume": "$850K", "attempts": 342, "risk": "High", "trend": "up"},
-        {"region": "High-Risk IP Zones", "volume": "$120K", "attempts": 450, "risk": "Critical", "trend": "up"},
-    ]
+    ] # Mocking demographic for now as we don't have age in DB
 
     return {
         "customerData": customerData,
@@ -89,77 +66,33 @@ def get_analytics(db: Session = Depends(get_db)):
         "heatmapData": heatmapData
     }
 
-import subprocess
-from app.models.models import MLModel
-
-@router.post("/train-model")
-def retrain_ml_model(db: Session = Depends(get_db)):
-    script_path = os.path.join(os.path.dirname(__file__), "../../../../ml_engine/train_model.py")
-    try:
-        result = subprocess.run(["python", script_path], capture_output=True, text=True, check=True)
-        return {"status": "success", "message": "Model retrained successfully", "logs": result.stdout}
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Training failed: {e.stderr}")
-
 @router.get("/ml-metrics")
 def get_ml_metrics(db: Session = Depends(get_db)):
-    # Fetch active model from DB
     active_model = db.query(MLModel).filter(MLModel.is_active == True).first()
     
     if not active_model:
-        # Fallback to simulated if no model is trained yet
-        return get_simulated_ml_metrics()
+        return {
+            "active_model": "None",
+            "f1_score": 0,
+            "precision": 0,
+            "training_data": "0",
+            "modelComparison": []
+        }
         
-    import json
-    try:
-        metrics = json.loads(active_model.metrics) if isinstance(active_model.metrics, str) else active_model.metrics
-    except:
-        metrics = {"F1 Score": 0, "Precision": 0, "Accuracy": 0, "Recall": 0, "ROC-AUC": 0}
-
-    # Extract model name from version ID (e.g. decision_tree_2026...)
-    model_name = active_model.version.split('_202')[0].replace('_', ' ').title() if active_model.version else "Unknown Model"
-
+    model_name = active_model.algorithm or "XGBoost"
+    
     modelComparison = [
-        {"subject": "Accuracy", "ActiveModel": metrics.get("accuracy", 0) * 100, "Baseline": 50, "fullMark": 100},
-        {"subject": "Precision", "ActiveModel": metrics.get("precision", 0) * 100, "Baseline": 50, "fullMark": 100},
-        {"subject": "Recall", "ActiveModel": metrics.get("recall", 0) * 100, "Baseline": 50, "fullMark": 100},
-        {"subject": "F1 Score", "ActiveModel": metrics.get("f1_score", 0) * 100, "Baseline": 50, "fullMark": 100},
-        {"subject": "ROC-AUC", "ActiveModel": metrics.get("roc_auc", 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "Accuracy", "ActiveModel": (active_model.accuracy or 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "Precision", "ActiveModel": (active_model.precision or 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "Recall", "ActiveModel": (active_model.recall or 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "F1 Score", "ActiveModel": (active_model.f1_score or 0) * 100, "Baseline": 50, "fullMark": 100},
+        {"subject": "ROC-AUC", "ActiveModel": (active_model.roc_auc or 0) * 100, "Baseline": 50, "fullMark": 100},
     ]
 
     return {
         "active_model": model_name,
-        "f1_score": round(metrics.get("f1_score", 0), 4),
-        "precision": round(metrics.get("precision", 0) * 100, 2),
-        "training_data": "10,000",
-        "modelComparison": modelComparison
-    }
-
-def get_simulated_ml_metrics():
-    # Simulating ML performance metrics and feature importance
-    featureImportance = [
-        {"name": "Amount", "value": 85},
-        {"name": "Location", "value": 72},
-        {"name": "Time of Day", "value": 68},
-        {"name": "Device Type", "value": 55},
-        {"name": "Customer Age", "value": 45},
-        {"name": "Payment Method", "value": 38},
-    ]
-
-    modelComparison = [
-        {"subject": "Accuracy", "XGBoost": 94, "RandomForest": 91, "LogisticRegression": 78, "fullMark": 100},
-        {"subject": "Precision", "XGBoost": 92, "RandomForest": 88, "LogisticRegression": 72, "fullMark": 100},
-        {"subject": "Recall", "XGBoost": 89, "RandomForest": 84, "LogisticRegression": 65, "fullMark": 100},
-        {"subject": "F1 Score", "XGBoost": 90, "RandomForest": 86, "LogisticRegression": 68, "fullMark": 100},
-        {"subject": "AUC-ROC", "XGBoost": 96, "RandomForest": 93, "LogisticRegression": 81, "fullMark": 100},
-        {"subject": "Speed", "XGBoost": 85, "RandomForest": 75, "LogisticRegression": 98, "fullMark": 100},
-    ]
-
-    return {
-        "active_model": "XGBoost-V4 (Simulated)",
-        "f1_score": 0.902,
-        "precision": 92.4,
-        "training_data": "2.4M",
-        "featureImportance": featureImportance,
+        "f1_score": active_model.f1_score or 0,
+        "precision": (active_model.precision or 0) * 100,
+        "training_data": "Generated",
         "modelComparison": modelComparison
     }

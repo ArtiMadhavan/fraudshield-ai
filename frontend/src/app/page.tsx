@@ -1,242 +1,195 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { 
-  ShieldCheck, 
-  ArrowRight, 
-  BrainCircuit, 
-  Activity, 
-  Lock, 
-  Zap, 
-  BarChart3, 
-  Layers, 
-  Server,
-  Database,
-  Globe
-} from "lucide-react";
-
-const features = [
-  {
-    icon: <BrainCircuit className="w-6 h-6 text-indigo-500" />,
-    title: "AI-Powered Detection",
-    description: "Advanced machine learning models analyze hundreds of data points in real-time to identify fraud patterns."
-  },
-  {
-    icon: <Zap className="w-6 h-6 text-amber-500" />,
-    title: "Real-time Decisions",
-    description: "Sub-50ms latency ensures fraudulent transactions are blocked before they impact your bottom line."
-  },
-  {
-    icon: <Activity className="w-6 h-6 text-emerald-500" />,
-    title: "Explainable AI",
-    description: "Human-readable explanations for every decision, making compliance and manual reviews effortless."
-  },
-  {
-    icon: <Lock className="w-6 h-6 text-rose-500" />,
-    title: "Enterprise Security",
-    description: "Bank-grade encryption, Role-Based Access Control (RBAC), and comprehensive audit trails."
-  }
-];
-
-const techStack = [
-  { name: "Next.js 15", icon: <Globe className="w-8 h-8" /> },
-  { name: "React 19", icon: <Layers className="w-8 h-8" /> },
-  { name: "FastAPI", icon: <Server className="w-8 h-8" /> },
-  { name: "MySQL", icon: <Database className="w-8 h-8" /> },
-  { name: "Scikit-Learn", icon: <BrainCircuit className="w-8 h-8" /> },
-  { name: "Tailwind CSS", icon: <Globe className="w-8 h-8" /> },
-];
+import { Shield, ChevronRight, Activity, BrainCircuit, Database, Lock, Server, Zap, Globe, Layers, ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/30">
-      
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-500 selection:text-white">
+      {/* Navbar */}
+      <nav className="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-primary p-1.5 rounded-lg text-white">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+              <Shield className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight">FraudShield AI</span>
+            <span className="text-xl font-bold text-slate-900 tracking-tight">FraudShield AI</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <a href="#features" className="hover:text-indigo-600 transition-colors">Features</a>
+            <a href="#architecture" className="hover:text-indigo-600 transition-colors">Architecture</a>
+            <a href="#workflow" className="hover:text-indigo-600 transition-colors">AI Workflow</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Sign In
+            <Link href="/sandbox" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors hidden md:block">
+              Merchant Sandbox
             </Link>
-            <Link href="/login" className="text-sm font-medium bg-primary text-primary-foreground px-4 py-2 rounded-full hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-              Get Started
+            <Link href="/login" className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-sm shadow-indigo-600/20 flex items-center gap-2">
+              Sign In <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Animated Background Gradients */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] max-w-5xl opacity-50 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full mix-blend-screen filter blur-[100px] animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-violet-500/20 rounded-full mix-blend-screen filter blur-[100px] animate-pulse" style={{ animationDelay: "2s" }}></div>
+      <main className="pt-32 pb-20 px-6">
+        <div className="max-w-7xl mx-auto text-center space-y-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold uppercase tracking-wider mb-4">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            v13.0 API Now Live
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.1]">
+            Enterprise Payment <br/><span className="text-indigo-600">Risk Intelligence</span> Platform
+          </h1>
+          
+          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
+            Protect every transaction with AI-powered fraud detection. Engineered for modern payment gateways, e-commerce, and digital wallets.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link href="/dashboard" className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-slate-900/20 flex items-center justify-center gap-2">
+              <LayoutDashboardIcon className="w-4 h-4" /> Admin Dashboard
+            </Link>
+            <Link href="/sandbox" className="w-full sm:w-auto bg-white border border-slate-200 hover:border-slate-300 text-slate-900 px-8 py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+              <TerminalIcon className="w-4 h-4" /> Merchant Sandbox
+            </Link>
+            <Link href="/dashboard/developers" className="w-full sm:w-auto bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-8 py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+              <CodeIcon className="w-4 h-4" /> Developer Portal
+            </Link>
+          </div>
         </div>
+      </main>
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              FraudShield AI v4.0 is live
+      {/* Logos/Trust Section */}
+      <section className="border-y border-slate-200 bg-white py-12 px-6">
+         <div className="max-w-7xl mx-auto">
+            <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Architecture Inspired By Enterprise Risk Engines</p>
+            <div className="flex flex-wrap justify-center gap-12 opacity-40 grayscale">
+               {/* Placeholders for logos */}
+               <div className="text-xl font-black">Stripe Radar</div>
+               <div className="text-xl font-black">Razorpay Risk</div>
+               <div className="text-xl font-black">Visa Risk Manager</div>
+               <div className="text-xl font-black">PayPal Fraud Protection</div>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
-              Enterprise Payment Fraud Prevention.
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed">
-              Stop fraudulent transactions in real-time with our advanced AI Decision Engine. Complete with explainable AI, beautiful dashboards, and seamless integration.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/login" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:scale-105 transition-transform">
-                Explore Dashboard <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link href="/dashboard/payments" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-4 rounded-full font-medium hover:bg-secondary/80 transition-colors">
-                Run Simulation
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Dashboard Preview Image/Mockup */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="mt-20 relative mx-auto max-w-5xl rounded-2xl border border-border bg-card shadow-2xl overflow-hidden ring-1 ring-white/10"
-          >
-            <div className="h-8 border-b border-border bg-muted/50 flex items-center px-4 gap-2">
-              <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <div className="aspect-[16/9] bg-muted relative flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-background to-muted/20"></div>
-              {/* Abstract Representation of Dashboard */}
-              <div className="absolute inset-0 p-8 grid grid-cols-3 gap-6 opacity-80">
-                <div className="col-span-2 space-y-6">
-                  <div className="h-32 rounded-xl bg-card border border-border shadow-sm flex items-end p-4 gap-2">
-                    {[40, 70, 45, 90, 65, 85, 100, 60, 80].map((h, i) => (
-                      <motion.div 
-                        key={i} 
-                        initial={{ height: 0 }}
-                        animate={{ height: `${h}%` }}
-                        transition={{ duration: 1, delay: 0.5 + (i * 0.1) }}
-                        className="flex-1 bg-primary/80 rounded-t-sm"
-                      ></motion.div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="h-48 rounded-xl bg-card border border-border shadow-sm p-4">
-                      <div className="w-1/2 h-4 bg-muted rounded mb-4"></div>
-                      <div className="space-y-2">
-                        {[1, 2, 3, 4].map(i => <div key={i} className="w-full h-8 bg-muted/50 rounded"></div>)}
-                      </div>
-                    </div>
-                    <div className="h-48 rounded-xl bg-card border border-border shadow-sm p-4 flex items-center justify-center relative">
-                       <div className="w-32 h-32 rounded-full border-8 border-primary/20 border-t-primary animate-spin-slow"></div>
-                       <div className="absolute font-bold text-2xl">98%</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-span-1 space-y-6">
-                  <div className="h-24 rounded-xl bg-primary text-primary-foreground p-4 flex flex-col justify-between">
-                     <div className="w-1/3 h-3 bg-white/20 rounded"></div>
-                     <div className="w-2/3 h-6 bg-white/40 rounded"></div>
-                  </div>
-                  <div className="h-[270px] rounded-xl bg-card border border-border shadow-sm p-4">
-                     <div className="w-1/2 h-4 bg-muted rounded mb-4"></div>
-                     <div className="space-y-4">
-                       {[1, 2, 3].map(i => (
-                         <div key={i} className="flex gap-3 items-center">
-                           <div className="w-10 h-10 rounded-full bg-muted"></div>
-                           <div className="flex-1 space-y-2">
-                             <div className="w-full h-3 bg-muted rounded"></div>
-                             <div className="w-2/3 h-2 bg-muted/50 rounded"></div>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-muted/30 border-y border-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Enterprise-Grade Intelligence</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to analyze, investigate, and block fraud at scale.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <motion.div 
-                key={index}
-                whileHover={{ y: -5 }}
-                className="bg-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all"
-              >
-                <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-4">
-                  {feature.icon}
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+      {/* AI Workflow */}
+      <section id="workflow" className="py-24 px-6 max-w-7xl mx-auto">
+         <div className="text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">Millisecond Decision Intelligence</h2>
+            <p className="text-slate-500 mt-3 font-medium">From API payload to blocked transaction in under 200ms.</p>
+         </div>
+
+         <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-8 md:p-12">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-center">
+                  <Database className="w-8 h-8 text-indigo-500 mx-auto mb-3" />
+                  <h3 className="font-bold text-slate-900">API Payload</h3>
+                  <p className="text-xs text-slate-500 mt-1">REST API ingests JSON via secure webhook.</p>
+               </div>
+               
+               <ChevronRight className="w-6 h-6 text-slate-300 hidden md:block mx-auto" />
+               
+               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-center relative">
+                  <div className="absolute -top-3 -right-3 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">FastAPI</div>
+                  <Server className="w-8 h-8 text-emerald-500 mx-auto mb-3" />
+                  <h3 className="font-bold text-slate-900">Validation</h3>
+                  <p className="text-xs text-slate-500 mt-1">Pydantic schema validation & enrichment.</p>
+               </div>
+               
+               <ChevronRight className="w-6 h-6 text-slate-300 hidden md:block mx-auto" />
+               
+               <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center relative shadow-lg">
+                  <div className="absolute -top-3 -right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">XGBoost</div>
+                  <BrainCircuit className="w-8 h-8 text-white mx-auto mb-3" />
+                  <h3 className="font-bold text-white">ML + Rules</h3>
+                  <p className="text-xs text-slate-400 mt-1">Calculates Fraud Probability & Risk Score.</p>
+               </div>
+            </div>
+         </div>
       </section>
 
       {/* Tech Stack */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold mb-12">Powered by Modern Technology</h2>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-            {techStack.map((tech, index) => (
-              <div key={index} className="flex flex-col items-center gap-2 hover:scale-110 transition-transform">
-                <div className="text-foreground">{tech.icon}</div>
-                <span className="text-sm font-medium">{tech.name}</span>
-              </div>
-            ))}
+      <section id="architecture" className="bg-slate-900 text-white py-24 px-6 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+             <div>
+                <h2 className="text-3xl font-black tracking-tight mb-4">Enterprise Technology Stack</h2>
+                <p className="text-slate-400 mb-8 text-lg">Built with modern, battle-tested technologies designed for high-throughput transactional systems.</p>
+                
+                <div className="space-y-4">
+                   <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                         <Layers className="w-5 h-5 text-indigo-400" />
+                      </div>
+                      <div>
+                         <h4 className="font-bold">Frontend UI</h4>
+                         <p className="text-sm text-slate-400 mt-1">Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui</p>
+                      </div>
+                   </div>
+                   <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                         <Zap className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                         <h4 className="font-bold">Backend API</h4>
+                         <p className="text-sm text-slate-400 mt-1">FastAPI, Python 3, SQLAlchemy ORM, JWT Authentication</p>
+                      </div>
+                   </div>
+                   <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                         <BrainCircuit className="w-5 h-5 text-amber-400" />
+                      </div>
+                      <div>
+                         <h4 className="font-bold">Machine Learning</h4>
+                         <p className="text-sm text-slate-400 mt-1">Scikit-learn, XGBoost, Random Forest, Pandas</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+             <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-emerald-500/20 blur-3xl rounded-full"></div>
+                <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 relative shadow-2xl overflow-hidden font-mono text-sm text-emerald-400">
+                   <div className="flex items-center gap-2 mb-4 border-b border-slate-700 pb-4">
+                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                   </div>
+                   <p className="text-slate-400">POST /api/v1/payments/process</p>
+                   <br/>
+                   <p>{`{`}</p>
+                   <p className="pl-4">"decision": <span className="text-red-400">"BLOCK"</span>,</p>
+                   <p className="pl-4">"risk_score": 91,</p>
+                   <p className="pl-4">"fraud_probability": 0.96,</p>
+                   <p className="pl-4">"reasons": [</p>
+                   <p className="pl-8 text-amber-400">"High transaction amount",</p>
+                   <p className="pl-8 text-amber-400">"Velocity rule triggered"</p>
+                   <p className="pl-4">]</p>
+                   <p>{`}`}</p>
+                </div>
+             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card py-12">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 opacity-50">
-            <ShieldCheck className="w-5 h-5" />
-            <span className="font-semibold">FraudShield AI</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Built as an MCA Final Year Project. Enterprise Ready.
-          </p>
-          <div className="flex gap-4 text-sm text-muted-foreground">
-            <Link href="https://github.com" target="_blank" className="hover:text-foreground">GitHub</Link>
-            <Link href="/login" className="hover:text-foreground">Dashboard</Link>
-          </div>
-        </div>
+      <footer className="bg-white border-t border-slate-200 py-12 px-6">
+         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+               <Shield className="w-5 h-5 text-indigo-600" />
+               <span className="font-bold text-slate-900 tracking-tight">FraudShield AI</span>
+            </div>
+            <p className="text-sm text-slate-500">Built for enterprise payment intelligence.</p>
+         </div>
       </footer>
     </div>
   );
 }
+
+// Inline Icons for Landing Page only
+const LayoutDashboardIcon = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>;
+const TerminalIcon = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>;
+const CodeIcon = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>;

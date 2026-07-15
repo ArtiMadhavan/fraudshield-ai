@@ -38,8 +38,12 @@ export default function LoginPage() {
       setTimeout(() => {
         router.push("/dashboard");
       }, 1000);
-    } catch (err) {
-      setError("Invalid credentials. Please try again.");
+    } catch (err: any) {
+      if (err.response && err.response.data && err.response.data.detail) {
+        setError(err.response.data.detail);
+      } else {
+        setError("Network Error: Could not connect to the server.");
+      }
       setLoading(false);
     }
   };

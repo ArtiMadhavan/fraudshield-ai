@@ -40,35 +40,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         or_(User.username == form_data.username, User.email == form_data.username)
     ).first()
     
-    if user:
-        if user.is_locked:
-            if user.locked_until and user.locked_until.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is locked due to multiple failed attempts.")
-            else:
-                # Lockout period expired
-                user.is_locked = False
-                user.failed_login_attempts = 0
-                user.locked_until = None
-                db.commit()
-
     if not user or not verify_password(form_data.password, user.password_hash):
-        if user:
-            user.failed_login_attempts += 1
-            if user.failed_login_attempts >= MAX_FAILED_ATTEMPTS:
-                user.is_locked = True
-                user.locked_until = datetime.utcnow() + timedelta(minutes=LOCKOUT_MINUTES)
-            db.commit()
-            
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        
-    # Reset attempts on successful login
-    if user.failed_login_attempts > 0:
-        user.failed_login_attempts = 0
-        db.commit()
         
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

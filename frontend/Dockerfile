@@ -2,18 +2,13 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm install --legacy-peer-deps
 
-# Copy source code
 COPY . .
 
-# Build the Next.js app
 RUN npm run build
 
-# Expose port
 EXPOSE 3000
 
-# Start Next.js
 CMD ["npm", "start"]

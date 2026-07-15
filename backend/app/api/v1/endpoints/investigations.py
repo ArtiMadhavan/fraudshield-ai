@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.models import FraudAlert, Transaction, FraudPrediction, Customer, Merchant
+import json
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ def get_investigations(skip: int = 0, limit: int = 100, db: Session = Depends(ge
             result.append({
                 "id": alert.id,
                 "transaction_id": tx.transaction_id,
-                "amount": f"${tx.amount:,.2f}",
+                "amount": f"₹{tx.amount:,.2f}",
                 "time": str(tx.created_at),
                 "status": alert.status,
                 "risk_score": pred.risk_score,
@@ -32,8 +33,8 @@ def get_investigations(skip: int = 0, limit: int = 100, db: Session = Depends(ge
                 "confidence": pred.confidence,
                 "customer": { "id": customer.customer_id, "name": customer.name, "risk": customer.risk_score, "history": "Unknown" },
                 "merchant": { "id": merchant.merchant_id, "name": merchant.name, "risk": merchant.fraud_percentage, "category": merchant.category },
-                "device": { "type": "Unknown", "os": tx.os, "browser": tx.browser, "ip": tx.ip_address, "location": tx.location },
-                "reasons": pred.rule_explanations.split('|') if pred.rule_explanations else [],
+                "device": { "type": tx.device, "os": "Unknown", "browser": "Unknown", "ip": tx.ip_address, "location": f"{tx.city}, {tx.state}" },
+                "reasons": json.loads(pred.reasons) if pred.reasons else [],
                 "analyst_notes": alert.analyst_notes
             })
     return result

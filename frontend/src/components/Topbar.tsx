@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 export default function Topbar() {
   const [notifications, setNotifications] = useState(3);
   const { lastMessage, isConnected } = useWebSocket("ws://localhost:8000/ws");
+  const [user, setUser] = useState<{username: string, role: string}>({ username: "User", role: "Role" });
 
   useEffect(() => {
     if (lastMessage?.type === "NEW_ALERT") {
@@ -16,6 +17,22 @@ export default function Topbar() {
       setNotifications(prev => prev + 1);
     }
   }, [lastMessage]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        setUser({
+          username: decodedPayload.sub || "User",
+          role: decodedPayload.role || "Role"
+        });
+      } catch (e) {
+        console.error("Failed to decode token", e);
+      }
+    }
+  }, []);
 
   return (
     <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
@@ -52,12 +69,12 @@ export default function Topbar() {
         </button>
         
         <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
-          <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm overflow-hidden">
-             AS
+          <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm overflow-hidden uppercase">
+             {user.username.substring(0, 2)}
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-bold text-slate-900 leading-none">Aarav Singh</p>
-            <p className="text-xs text-slate-500 mt-1">Risk Manager</p>
+            <p className="text-sm font-bold text-slate-900 leading-none capitalize">{user.username}</p>
+            <p className="text-xs text-slate-500 mt-1 capitalize">{user.role}</p>
           </div>
         </div>
       </div>

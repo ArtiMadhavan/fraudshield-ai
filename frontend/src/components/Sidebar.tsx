@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -31,22 +32,12 @@ const navigationGroups = [
   {
     title: "MAIN",
     items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
       { name: 'Transactions', href: '/dashboard/payments', icon: CreditCard },
       { name: 'Alerts', href: '/dashboard/investigation', icon: Bell },
       { name: 'Customers', href: '/dashboard/customer-360', icon: Users },
       { name: 'Merchants', href: '/dashboard/merchant-360', icon: Store },
-      { name: 'Reports', href: '/dashboard/reports', icon: FileText },
       { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-    ]
-  },
-  {
-    title: "RISK MANAGEMENT",
-    items: [
-      { name: 'Risk Rules', href: '/dashboard/rules', icon: Shield },
-      { name: 'Fraud Cases', href: '/dashboard/cases', icon: Briefcase },
-      { name: 'Decision Logs', href: '/dashboard/logs', icon: History },
-      { name: 'Watchlist', href: '/dashboard/watchlist', icon: Eye },
     ]
   },
   {
@@ -54,24 +45,37 @@ const navigationGroups = [
     items: [
       { name: 'AI Testing Console', href: '/dashboard/upload', icon: TerminalSquare },
       { name: 'Model Performance', href: '/dashboard/ml', icon: BrainCircuit },
-      { name: 'Model Registry', href: '/dashboard/registry', icon: Database },
-      { name: 'Training History', href: '/dashboard/training', icon: History },
-      { name: 'Feature Importance', href: '/dashboard/features', icon: LineChart },
+      { name: 'Developer Portal', href: '/dashboard/developers', icon: Database },
     ]
   },
   {
     title: "ADMIN",
     items: [
       { name: 'Users', href: '/dashboard/users', icon: UserCircle },
-      { name: 'Roles & Permissions', href: '/dashboard/roles', icon: Lock },
-      { name: 'System Settings', href: '/dashboard/settings', icon: Settings },
-      { name: 'Audit Logs', href: '/dashboard/audit', icon: ClipboardList },
+      { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ]
   }
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<{username: string, role: string}>({ username: "User", role: "Role" });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        setUser({
+          username: decodedPayload.sub || "User",
+          role: decodedPayload.role || "Role"
+        });
+      } catch (e) {
+        console.error("Failed to decode token", e);
+      }
+    }
+  }, []);
 
   return (
     <div className="flex flex-col w-64 bg-white border-r border-slate-200 h-screen sticky top-0 custom-scrollbar overflow-hidden">
@@ -120,12 +124,12 @@ export default function Sidebar() {
       <div className="p-4 border-t border-slate-100">
         <div className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-              AS
+            <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm uppercase">
+              {user.username.substring(0, 2)}
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 leading-none">Aarav Singh</p>
-              <p className="text-xs text-slate-500 mt-1">Risk Manager</p>
+              <p className="text-sm font-bold text-slate-900 leading-none capitalize">{user.username}</p>
+              <p className="text-xs text-slate-500 mt-1 capitalize">{user.role}</p>
             </div>
           </div>
           <MoreVertical className="w-4 h-4 text-slate-400" />

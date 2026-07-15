@@ -27,17 +27,20 @@ class UserLogin(BaseModel):
     password: str
 
 class TransactionRequest(BaseModel):
-    customer_id: str
-    merchant_id: str
+    customer_name: str
+    customer_mobile: Optional[str] = None
+    merchant_name: str
+    merchant_category: str
     amount: float
-    currency: str = "USD"
     payment_method: str
+    upi_app: Optional[str] = None
+    upi_id: Optional[str] = None
+    bank_name: Optional[str] = None
     device: str
-    browser: str
-    os: str
-    location: str
-    ip_address: str
-    transaction_type: str
+    city: str
+    state: str
+    ip_address: Optional[str] = None
+    transaction_time: Optional[datetime] = None
 
 class PredictionResponse(BaseModel):
     decision: str
@@ -54,16 +57,11 @@ class CustomerResponse(BaseModel):
     id: int
     customer_id: str
     name: str
-    email: str
+    email: Optional[str] = None
+    mobile_number: Optional[str] = None
     kyc_status: str
-    credit_score: int
     wallet_balance: float
     risk_score: float
-    monthly_spend: float
-    average_monthly_spend: float
-    clv: float
-    device_history: Optional[str] = None
-    location_history: Optional[str] = None
     created_at: datetime
     class Config:
         from_attributes = True
@@ -73,12 +71,10 @@ class MerchantResponse(BaseModel):
     merchant_id: str
     name: str
     category: str
-    countries: Optional[str] = None
     total_revenue: float
-    settlement_status: str
     chargeback_percentage: float
     fraud_percentage: float
-    risk_level: str
+    risk_rating: str
     created_at: datetime
     class Config:
         from_attributes = True
@@ -89,6 +85,7 @@ class TransactionResponse(BaseModel):
     amount: float
     currency: str
     payment_method: str
+    upi_app: Optional[str] = None
     status: str
     created_at: datetime
     customer: Optional[CustomerResponse] = None
@@ -101,11 +98,4 @@ class DashboardKPIs(BaseModel):
     fraud_transactions: int
     revenue: float
     fraud_percentage: float
-    blocked_transactions: int
-    high_risk_customers: int
-    avg_transaction_value: float
     model_accuracy: float
-    approval_rate: float
-    active_analysts: int
-    active_merchants: int
-    active_customers: int

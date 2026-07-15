@@ -22,24 +22,20 @@ def get_merchant_360(merchant_id: str, db: Session = Depends(get_db)):
         if not merchant:
             raise HTTPException(status_code=404, detail="Merchant not found")
             
-    # Fetch real transactions
     transactions = db.query(Transaction).filter(Transaction.merchant_id == merchant.id).order_by(Transaction.created_at.desc()).limit(10).all()
     
-    # Calculate revenue trend
     start_date = datetime.utcnow() - timedelta(days=30)
-    tx_df = pd.read_sql(db.query(Transaction.created_at, Transaction.amount).filter(Transaction.merchant_id == merchant.id, Transaction.created_at >= start_date).statement, db.bind)
-    
+    try:
+        tx_df = pd.read_sql(db.query(Transaction.created_at, Transaction.amount).filter(Transaction.merchant_id == merchant.id, Transaction.created_at >= start_date).statement, db.bind)
+    except:
+        tx_df = pd.DataFrame()
+        
     if not tx_df.empty:
         tx_df['date'] = pd.to_datetime(tx_df['created_at']).dt.strftime('%b %d')
         revenue_trend = tx_df.groupby('date', sort=False)['amount'].sum().reset_index().rename(columns={'amount': 'Revenue'}).to_dict('records')
     else:
         revenue_trend = []
         
-    try:
-        countries = json.loads(merchant.countries) if merchant.countries else []
-    except:
-        countries = []
-
     formatted_txs = []
     for t in transactions:
         formatted_txs.append({
@@ -50,18 +46,16 @@ def get_merchant_360(merchant_id: str, db: Session = Depends(get_db)):
             "date": str(t.created_at)
         })
         
-    summary = f"Merchant {merchant.name} (Category: {merchant.category}) has a fraud percentage of {merchant.fraud_percentage:.2f}%. Settlement status is {merchant.settlement_status}."
+    summary = f"Merchant {merchant.name} (Category: {merchant.category}) has a fraud percentage of {merchant.fraud_percentage:.2f}%."
 
     result = {
         "id": merchant.merchant_id,
         "name": merchant.name,
         "category": merchant.category,
-        "countries": countries,
         "total_revenue": merchant.total_revenue,
-        "settlement_status": merchant.settlement_status,
         "chargeback_percentage": merchant.chargeback_percentage,
         "fraud_percentage": merchant.fraud_percentage,
-        "risk_level": merchant.risk_level,
+        "risk_rating": merchant.risk_rating,
         "join_date": str(merchant.created_at),
         "summary": summary,
         "revenueTrend": revenue_trend,

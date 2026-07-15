@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import transactions, system, auth, dashboard, customers, merchants, investigations, websockets
@@ -13,9 +14,10 @@ app = FastAPI(
 )
 
 # CORS configuration
+origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict to frontend domain
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,3 +36,7 @@ app.include_router(websockets.router, prefix="", tags=["WebSockets"])
 @app.get("/")
 def root():
     return {"message": "Welcome to FraudShield AI Enterprise API"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "fraudshield-api"}

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from jose import jwt
 
 # Secret key for JWT
-SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey_for_fraudshield_ai_enterprise")
+SECRET_KEY = os.getenv("JWT_SECRET", os.getenv("SECRET_KEY", "supersecretkey_for_fraudshield_ai_enterprise"))
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

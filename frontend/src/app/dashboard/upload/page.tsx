@@ -24,18 +24,56 @@ interface PredictionResult {
 
 export default function AITestingConsole() {
   const [method, setMethod] = useState<InputMethod>("json");
-  const [jsonInput, setJsonInput] = useState("{\n  \"customer_id\": \"CUST-9921\",\n  \"merchant_id\": \"M-APPLE\",\n  \"amount\": 1250.00,\n  \"currency\": \"USD\",\n  \"payment_method\": \"Credit Card\",\n  \"device\": \"Desktop\",\n  \"browser\": \"Chrome\",\n  \"os\": \"Windows\",\n  \"location\": \"New York, USA\",\n  \"ip_address\": \"192.168.1.1\",\n  \"transaction_type\": \"Purchase\"\n}");
+  const [jsonInput, setJsonInput] = useState("{\n  \"customer_name\": \"Arti Madhavan\",\n  \"customer_mobile\": \"+91 9876543210\",\n  \"merchant_name\": \"Amazon India\",\n  \"merchant_category\": \"E-commerce\",\n  \"amount\": 3250.00,\n  \"payment_method\": \"UPI\",\n  \"upi_app\": \"PhonePe\",\n  \"upi_id\": \"arti@ibl\",\n  \"bank_name\": \"HDFC Bank\",\n  \"device\": \"Android\",\n  \"city\": \"Bengaluru\",\n  \"state\": \"Karnataka\",\n  \"ip_address\": \"103.24.1.5\"\n}");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [timelineStep, setTimelineStep] = useState(0);
+
+  const [file, setFile] = useState<File | null>(null);
+  const [batchResult, setBatchResult] = useState<any>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
 
   const handleAnalyze = async () => {
     try {
       setLoading(true);
       setResult(null);
+      setBatchResult(null);
       setTimelineStep(1); // Received
 
-      // Parse JSON
+      if (method === "file") {
+        if (!file) {
+          alert("Please select a file first");
+          setLoading(false);
+          return;
+        }
+        
+        setTimeout(() => setTimelineStep(3), 500); // Validated & ML Infer
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        // Ensure authentication token is sent
+        const token = localStorage.getItem("token");
+        const res = await api.post("/payments/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        setTimeout(() => {
+          setTimelineStep(5); // Decision
+          setBatchResult(res.data);
+          setLoading(false);
+        }, 1500);
+        return;
+      }
+
+      // Parse JSON for manual or json mode
       let payload;
       try {
         payload = JSON.parse(jsonInput);
@@ -66,8 +104,8 @@ export default function AITestingConsole() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-20">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">AI Testing Console</h1>
-        <p className="text-muted-foreground mt-1 text-sm font-medium">Internal Enterprise Tool for manual transaction testing and ML inference validation.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">AI Transaction Console</h1>
+        <p className="text-muted-foreground mt-1 text-sm font-medium">Internal Enterprise Tool for manual transaction entry, CSV uploads, and ML inference validation.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -112,14 +150,68 @@ export default function AITestingConsole() {
                 </div>
               )}
               {method === "form" && (
-                <div className="h-80 flex items-center justify-center text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">
-                  Manual form builder coming soon. Use Raw JSON for now.
+                <div className="h-80 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Customer Name</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm" defaultValue="Rahul Sharma" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Mobile Number</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm" defaultValue="+91 9876543210" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Merchant Name</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm" defaultValue="Amazon India" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Amount (₹)</label>
+                      <input type="number" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm" defaultValue="15000" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Payment Method</label>
+                      <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+                        <option>UPI</option>
+                        <option>Credit Card</option>
+                        <option>Debit Card</option>
+                        <option>Net Banking</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">UPI App</label>
+                      <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+                        <option>PhonePe</option>
+                        <option>Google Pay</option>
+                        <option>Paytm</option>
+                        <option>BHIM</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">City</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm" defaultValue="Bengaluru" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">State</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm" defaultValue="Karnataka" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Device</label>
+                      <select className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm">
+                        <option>Android</option>
+                        <option>iOS</option>
+                        <option>Windows</option>
+                        <option>Mac</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 italic text-center mt-4">Form data is synced with JSON input.</p>
                 </div>
               )}
               {method === "file" && (
-                <div className="h-80 flex flex-col items-center justify-center text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
-                  <UploadCloud className="w-10 h-10 mb-3 text-slate-400" />
-                  <p className="font-semibold text-slate-600">Click to upload CSV or JSON file</p>
+                <div className="h-80 flex flex-col items-center justify-center text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors relative">
+                  <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleFileUpload} accept=".json,.csv" />
+                  <UploadCloud className="w-10 h-10 mb-3 text-indigo-400" />
+                  <p className="font-semibold text-slate-600">{file ? file.name : "Click to upload CSV or JSON file"}</p>
                   <p className="text-xs mt-1">Batch processing supports up to 10,000 rows</p>
                 </div>
               )}
@@ -128,11 +220,11 @@ export default function AITestingConsole() {
             <div className="p-6 border-t border-slate-200 bg-slate-50">
               <button 
                 onClick={handleAnalyze}
-                disabled={loading}
+                disabled={loading || (method === "file" && !file)}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-md flex justify-center items-center gap-2 transition-all disabled:opacity-50"
               >
                 {loading ? <Activity className="w-5 h-5 animate-pulse" /> : <Play className="w-5 h-5 fill-current" />}
-                Analyze Transaction
+                Analyze Transaction{method === "file" && "s"}
               </button>
             </div>
           </div>
@@ -141,14 +233,48 @@ export default function AITestingConsole() {
         {/* Right Panel: Output & Timeline */}
         <div className="lg:col-span-7 space-y-6">
           <AnimatePresence mode="wait">
-            {!loading && !result && (
+            {!loading && !result && !batchResult && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full min-h-[400px] flex flex-col items-center justify-center text-slate-400 bg-white border border-slate-200 rounded-[18px] border-dashed">
                 <BrainCircuit className="w-12 h-12 mb-4 text-slate-300" />
                 <p className="font-medium text-slate-500">Waiting for transaction payload...</p>
               </motion.div>
             )}
 
-            {(loading || result) && (
+            {(loading || batchResult) && method === "file" && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-slate-200 rounded-[18px] shadow-sm overflow-hidden p-8 text-center min-h-[400px] flex flex-col justify-center">
+                {loading ? (
+                  <div className="space-y-4">
+                    <Activity className="w-12 h-12 text-indigo-400 animate-spin mx-auto" />
+                    <p className="font-semibold text-slate-700">Processing Batch Data...</p>
+                  </div>
+                ) : (
+                  <div>
+                    <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-slate-900 mb-6">Batch Processing Complete</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p className="text-sm font-medium text-slate-500">Total Uploaded</p>
+                        <p className="text-2xl font-black mt-1 text-indigo-700">{batchResult.total_uploaded}</p>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p className="text-sm font-medium text-slate-500">Successful</p>
+                        <p className="text-2xl font-black mt-1 text-emerald-600">{batchResult.successful}</p>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p className="text-sm font-medium text-slate-500">Fraud Flagged</p>
+                        <p className="text-2xl font-black mt-1 text-red-600">{batchResult.fraud_count}</p>
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p className="text-sm font-medium text-slate-500">Failed/Invalid</p>
+                        <p className="text-2xl font-black mt-1 text-amber-600">{batchResult.failed}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {(loading || result) && method !== "file" && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-slate-200 rounded-[18px] shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-center gap-3">
                   <BrainCircuit className={cn("w-5 h-5 text-indigo-600", loading && "animate-pulse")} />
@@ -218,8 +344,12 @@ export default function AITestingConsole() {
                     ) : (
                       <div className="space-y-3">
                         {result?.reasons?.map((reason, i) => (
-                          <div key={i} className="flex items-start gap-3 bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100/50">
-                            <Activity className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                          <div key={i} className={`flex items-start gap-3 p-3.5 rounded-xl border ${result.decision === 'APPROVE' ? 'bg-emerald-50/50 border-emerald-100/50 text-emerald-700' : 'bg-amber-50/50 border-amber-100/50 text-amber-700'}`}>
+                            {result.decision === 'APPROVE' ? (
+                              <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                            ) : (
+                              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                            )}
                             <span className="text-sm font-medium text-slate-700">{reason}</span>
                           </div>
                         ))}

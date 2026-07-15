@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, ComposedChart
@@ -10,7 +11,8 @@ import {
   Activity, ShieldAlert, DollarSign, Database,
   ArrowUpRight, ArrowDownRight,
   MonitorPlay, PlusCircle, UploadCloud, FileText,
-  Server, Cpu, Network, ShieldCheck, Lock, CreditCard
+  Server, Cpu, Network, ShieldCheck, Lock, CreditCard,
+  CheckCircle, BrainCircuit
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
@@ -105,12 +107,12 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {/* Card 1 */}
         <div className="bg-white border border-slate-200 p-4 rounded-[18px] shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">Total Transactions</p>
+              <p className="text-xs font-semibold text-slate-500 mb-1">Today's Transactions</p>
               <h3 className="text-xl font-bold text-slate-900">{stats.total_transactions.toLocaleString()}</h3>
             </div>
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -119,7 +121,6 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-2 mt-4 text-xs">
             <span className="flex items-center text-green-600 font-bold"><TrendingUp className="w-3 h-3 mr-1"/> {stats.tx_trend}%</span>
-            <span className="text-slate-400 font-medium">vs last 7 days</span>
           </div>
         </div>
 
@@ -127,16 +128,15 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-4 rounded-[18px] shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">Total Amount</p>
-              <h3 className="text-xl font-bold text-slate-900">{stats.total_amount_str}</h3>
+              <p className="text-xs font-semibold text-slate-500 mb-1">Fraud Detection Rate</p>
+              <h3 className="text-xl font-bold text-slate-900">4.2%</h3>
             </div>
-            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-              <CreditCard className="w-4 h-4 text-emerald-600" />
+            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+              <ShieldAlert className="w-4 h-4 text-red-600" />
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4 text-xs">
-            <span className="flex items-center text-green-600 font-bold"><TrendingUp className="w-3 h-3 mr-1"/> {stats.amount_trend}%</span>
-            <span className="text-slate-400 font-medium">vs last 7 days</span>
+             <span className="flex items-center text-slate-500 font-medium">{stats.fraud_detected} flags today</span>
           </div>
         </div>
 
@@ -144,16 +144,15 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-4 rounded-[18px] shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">Fraud Detected</p>
-              <h3 className="text-xl font-bold text-slate-900">{stats.fraud_detected}</h3>
+              <p className="text-xs font-semibold text-slate-500 mb-1">Revenue Processed</p>
+              <h3 className="text-xl font-bold text-slate-900">{stats.total_amount_str}</h3>
             </div>
-            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-              <ShieldAlert className="w-4 h-4 text-red-600" />
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-emerald-600" />
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4 text-xs">
-            <span className="flex items-center text-green-600 font-bold"><TrendingUp className="w-3 h-3 mr-1"/> {stats.fraud_trend_val}%</span>
-            <span className="text-slate-400 font-medium">vs last 7 days</span>
+            <span className="flex items-center text-green-600 font-bold"><TrendingUp className="w-3 h-3 mr-1"/> {stats.amount_trend}%</span>
           </div>
         </div>
 
@@ -161,16 +160,15 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-4 rounded-[18px] shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">Blocked Amount</p>
-              <h3 className="text-xl font-bold text-slate-900">{stats.blocked_amount_str}</h3>
+              <p className="text-xs font-semibold text-slate-500 mb-1">Average Risk Score</p>
+              <h3 className="text-xl font-bold text-amber-600">18.4</h3>
             </div>
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-purple-600" />
+            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+              <Activity className="w-4 h-4 text-amber-600" />
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4 text-xs">
-            <span className="flex items-center text-green-600 font-bold"><TrendingUp className="w-3 h-3 mr-1"/> {stats.blocked_trend}%</span>
-            <span className="text-slate-400 font-medium">vs last 7 days</span>
+            <span className="flex items-center text-green-600 font-bold"><TrendingDown className="w-3 h-3 mr-1"/> -2.1</span>
           </div>
         </div>
 
@@ -178,16 +176,31 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-4 rounded-[18px] shadow-sm">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <p className="text-xs font-semibold text-slate-500 mb-1">Chargeback Loss</p>
-              <h3 className="text-xl font-bold text-slate-900">{stats.chargeback_loss_str}</h3>
+              <p className="text-xs font-semibold text-slate-500 mb-1">Approval Rate</p>
+              <h3 className="text-xl font-bold text-emerald-600">95.8%</h3>
             </div>
-            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4 text-xs">
-            <span className="flex items-center text-red-600 font-bold"><TrendingDown className="w-3 h-3 mr-1"/> {stats.chargeback_trend}%</span>
-            <span className="text-slate-400 font-medium">vs last 7 days</span>
+            <span className="flex items-center text-slate-500 font-medium">Auto-approved by AI</span>
+          </div>
+        </div>
+        
+        {/* Card 6 */}
+        <div className="bg-white border border-slate-200 p-4 rounded-[18px] shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-1">Model Accuracy</p>
+              <h3 className="text-xl font-bold text-indigo-600">98.2%</h3>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+              <BrainCircuit className="w-4 h-4 text-indigo-600" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-4 text-xs">
+            <span className="flex items-center text-indigo-500 font-medium">Random Forest V3</span>
           </div>
         </div>
       </div>
@@ -265,7 +278,7 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-5 rounded-[18px] shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-bold text-slate-900">Recent Alerts</h3>
-            <span className="text-xs text-blue-600 font-semibold cursor-pointer">View All</span>
+            <Link href="/dashboard/investigation" className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline">View All</Link>
           </div>
           <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
             {recent_alerts.map((alert: any, i: number) => (
@@ -322,7 +335,7 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-5 rounded-[18px] shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-bold text-slate-900">Top Risky Merchants</h3>
-            <span className="text-xs text-blue-600 font-semibold cursor-pointer">View All</span>
+            <Link href="/dashboard/merchant-360" className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline">View All</Link>
           </div>
           <div className="flex-1 space-y-4">
              {top_risky_merchants.map((merchant: any, i: number) => (
@@ -346,7 +359,7 @@ export default function Dashboard() {
         <div className="bg-white border border-slate-200 p-5 rounded-[18px] shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-bold text-slate-900">System Health</h3>
-            <span className="text-xs text-blue-600 font-semibold cursor-pointer">View All</span>
+            <Link href="/dashboard/settings" className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline">View All</Link>
           </div>
           <div className="flex-1 space-y-4 mt-2">
              {system_health.map((sys: any, i: number) => (
@@ -368,22 +381,14 @@ export default function Dashboard() {
           <div className="bg-white border border-slate-200 p-5 rounded-[18px] shadow-sm flex-1">
              <h3 className="text-sm font-bold text-slate-900 mb-4">Quick Actions</h3>
              <div className="grid grid-cols-2 gap-3">
-                <button className="p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+                <Link href="/dashboard/payments" className="p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                   <MonitorPlay className="w-4 h-4 text-indigo-500" />
                   <span className="text-[10px] font-semibold text-slate-700 text-center">Simulate<br/>Transaction</span>
-                </button>
-                <button className="p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                  <PlusCircle className="w-4 h-4 text-emerald-500" />
-                  <span className="text-[10px] font-semibold text-slate-700 text-center">Add New<br/>Rule</span>
-                </button>
-                <button className="p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+                </Link>
+                <Link href="/dashboard/upload" className="p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                   <UploadCloud className="w-4 h-4 text-purple-500" />
                   <span className="text-[10px] font-semibold text-slate-700 text-center">Upload<br/>Dataset</span>
-                </button>
-                <button className="p-3 border border-slate-200 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  <span className="text-[10px] font-semibold text-slate-700 text-center">Generate<br/>Report</span>
-                </button>
+                </Link>
              </div>
           </div>
           <div className="bg-indigo-50/80 border border-indigo-100 p-5 rounded-[18px] flex gap-4 items-center relative overflow-hidden">
@@ -406,7 +411,7 @@ export default function Dashboard() {
       <div className="bg-white border border-slate-200 rounded-[18px] shadow-sm overflow-hidden">
         <div className="flex justify-between items-center p-5 border-b border-slate-100">
           <h3 className="text-sm font-bold text-slate-900">Recent Transactions</h3>
-          <span className="text-xs text-blue-600 font-semibold cursor-pointer">View All</span>
+          <Link href="/dashboard/payments" className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline">View All</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

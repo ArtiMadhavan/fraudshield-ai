@@ -1,148 +1,137 @@
-# 🚀 FraudShield AI Enterprise
+# FraudShield AI - Enterprise Payment Risk Intelligence
 
-**FraudShield AI** is an enterprise-inspired payment fraud detection platform built using modern full-stack technologies. It demonstrates real-world software architecture, machine learning integration, role-based authentication, analytics dashboards, and secure payment risk analysis.
+FraudShield AI is an enterprise-grade payment risk intelligence platform designed for modern fintech architectures. It uses machine learning (XGBoost, Random Forest) to analyze transaction payloads in real-time, assigning risk scores, fraud probabilities, and actionable decisions (APPROVE, REVIEW, BLOCK) in milliseconds.
 
----
+## Architecture
 
-## 🌟 Features
-
-- **Enterprise UI/UX**: Premium, responsive interfaces built with Next.js, Tailwind CSS, shadcn/ui, and Framer Motion.
-- **Rule-Based Explainability AI**: Evaluates transactions instantly using Machine Learning alongside Business Rules, returning comprehensive human-readable reasons for decisions.
-- **Role-Based Access Control (RBAC)**: Secure access gating for Admins, Fraud Analysts, Risk Managers, and Customers using JWT and BCrypt.
-- **Real-Time Infrastructure**: WebSockets integration via FastAPI for instantaneous broadcasting of new transactions, alerts, and KPI updates without page refreshes.
-- **Admin Transaction Testing Console**: A dedicated interface (`/dashboard/upload`) for manually pushing JSON payloads and CSV batch files through the AI Decision Engine.
-- **Comprehensive Dashboards**: Executive, Fraud, Customer 360, Merchant 360, and Investigation Workspaces.
-- **Dockerized Deployments**: Pre-configured `Dockerfile`s, `render.yaml`, `vercel.json`, and `railway.json` for seamless cloud deployment.
-
----
-
-## 🏗️ Enterprise Architecture
-
-FraudShield AI follows a clean, decoupled architecture:
-1. **Presentation Layer**: Next.js 15 (React 19) App Router handling SSR/SSG and client-side rendering.
-2. **API Layer**: FastAPI (Python) serving highly concurrent RESTful endpoints and WebSockets.
-3. **Service Layer**: Decoupled business logic (Transaction processing, ML inference, Alert generation).
-4. **Data Layer**: SQLAlchemy ORM integrating seamlessly with SQLite (Local) or MySQL/PostgreSQL (Production).
-
-### Entity Relationship Diagram (ERD)
-```mermaid
-erDiagram
-    USERS ||--o{ FRAUD_ALERTS : investigates
-    CUSTOMERS ||--o{ TRANSACTIONS : initiates
-    MERCHANTS ||--o{ TRANSACTIONS : processes
-    TRANSACTIONS ||--|| FRAUD_PREDICTIONS : evaluated_by
-    TRANSACTIONS ||--o| FRAUD_ALERTS : triggers
-```
-
-### Folder Structure
 ```text
-FraudShield-AI/
-├── backend/                  # FastAPI Application
-│   ├── app/
-│   │   ├── api/              # REST Endpoints & WebSockets
-│   │   ├── auth/             # JWT & RBAC Logic
-│   │   ├── core/             # Config & Database Setup
-│   │   ├── models/           # SQLAlchemy Data Models
-│   │   ├── repositories/     # Data Access Layer
-│   │   └── services/         # Business Logic & Decision Engine
-│   ├── seed.py               # Enterprise Data Generator
-│   └── requirements.txt      # Python Dependencies
-├── frontend/                 # Next.js Application
-│   ├── src/
-│   │   ├── app/              # App Router Pages
-│   │   ├── components/       # Reusable UI Components
-│   │   ├── hooks/            # Custom React Hooks (WebSockets)
-│   │   └── lib/              # Utilities & API Clients
-│   └── package.json          # Node Dependencies
-├── ml_engine/                # Machine Learning Pipeline
-│   ├── notebooks/            # EDA Jupyter Notebooks
-│   ├── train_model.py        # Model Training Script
-│   └── models/               # Serialized .joblib Models
-├── tests/                    # Pytest Test Suite
-├── .github/workflows/        # CI/CD Pipelines
-└── docker-compose.yml        # Docker Orchestration
+                GitHub
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+     Vercel               Render
+   (Next.js UI)       (FastAPI API)
+        │                     │
+        └──────────┬──────────┘
+                   │
+              SQLite Database
+                   │
+           AI Decision Engine
+                   │
+        Random Forest / XGBoost
+                   │
+        Fraud Detection Results
 ```
 
----
-
-## 🛠️ Tech Stack
-
-**Frontend**
-- Next.js 15 (App Router), React 19, TypeScript
-- Tailwind CSS, shadcn/ui, Framer Motion, Recharts, TanStack Table
-
-**Backend**
-- Python 3.11, FastAPI, Uvicorn, WebSockets
-- SQLAlchemy, SQLite / MySQL, PyJWT, Passlib, Pydantic
-
-**Machine Learning**
-- Scikit-learn, XGBoost, Pandas, NumPy, Joblib
-
-**DevOps & Deployment**
-- Docker & Docker Compose
-- GitHub Actions (CI)
-- Vercel (Frontend), Render/Railway (Backend)
+### Technology Stack
+* **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS, shadcn/ui, Recharts
+* **Backend**: FastAPI, Python 3, SQLAlchemy ORM, JWT Authentication
+* **Machine Learning**: Scikit-learn, XGBoost, Pandas
+* **Database**: SQLite (Configured for easy transition to PostgreSQL/MySQL)
+* **Deployment**: Docker, Vercel, Render
 
 ---
 
-## 🚀 Deployment Guide
+## Local Setup
 
-### Prerequisites
-- Node.js 20+
-- Python 3.10+
-- Docker (optional)
+### 1. Clone the repository
+```bash
+git clone https://github.com/<your-username>/FraudShield-AI.git
+cd FraudShield-AI
+```
 
-### 1. Local Development (Without Docker)
-
-**Backend Setup:**
+### 2. Backend Setup (FastAPI)
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Windows: venv\Scripts\activate | Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
-python seed.py  # Generates 5000+ realistic enterprise records
+python seed.py
 uvicorn app.main:app --reload --port 8000
 ```
 
-**Frontend Setup:**
+### 3. Frontend Setup (Next.js)
+Open a new terminal.
 ```bash
 cd frontend
-npm install
+npm install --legacy-peer-deps
 npm run dev
 ```
-
-### 2. Docker Compose (Production Ready)
-```bash
-docker-compose up --build -d
-```
-*Frontend will be available on `http://localhost:3000` and Backend on `http://localhost:8000`.*
+Access the application at `http://localhost:3000`.
 
 ---
 
-## 🧪 Testing Instructions
-This project is built with test-driven robustness. To run the automated tests:
-```bash
-cd backend
-export PYTHONPATH=$(pwd)
-pytest ../tests/ -v
+## Environment Variables
+
+Copy `.env.example` to `.env` (or configure these in your PaaS like Vercel/Render).
+
+**Frontend (`frontend/.env.local` or Vercel Settings)**
+```env
+NEXT_PUBLIC_API_URL=https://your-render-url.onrender.com/api/v1
 ```
 
----
-
-## 📚 API Documentation (Swagger)
-Once the backend is running, visit:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
-
-### Core Endpoints
-- `POST /api/v1/auth/login` - Issue JWT token
-- `POST /api/v1/payments/upload` - Evaluate transactions via AI (JSON/CSV)
-- `GET /api/v1/dashboard/stats` - Fetch aggregate executive KPIs
-- `WS /ws` - WebSocket real-time event broadcast
+**Backend (`backend/.env` or Render Settings)**
+```env
+DATABASE_URL=sqlite:///./sql_app.db
+JWT_SECRET=your_super_secret_jwt_key
+ALLOWED_ORIGINS=https://your-vercel-app-url.vercel.app
+```
 
 ---
 
-## 🛡️ Machine Learning Pipeline
-The `ml_engine/` directory contains scripts to synthetically generate millions of transaction rows, preprocess them, and train multiple models (`LogisticRegression`, `DecisionTree`, `RandomForest`, `XGBoost`). The champion model is selected via ROC-AUC scoring and exported as `fraud_model.joblib`.
+## Deployment Guide (Option A: Vercel + Render)
 
-During inference, SHAP is avoided to ensure sub-100ms response times. Instead, a lightweight **Rule-Based Explainability Engine** maps model probabilities back to exact business logic rules.
+This project is configured for a zero-cost, serverless-style deployment.
+
+### 1. Push to GitHub
+```bash
+git init
+git add .
+git commit -m "Initial Commit"
+git branch -M main
+git remote add origin https://github.com/<your-username>/FraudShield-AI.git
+git push -u origin main
+```
+
+### 2. Deploy Backend to Render (Free)
+1. Go to [Render.com](https://render.com) and create a **New Web Service**.
+2. Connect your GitHub repository.
+3. Render will automatically detect the `render.yaml` file and configure the service.
+4. Add the Environment Variables:
+   - `JWT_SECRET`: (Generate a secure random string)
+   - `ALLOWED_ORIGINS`: (Leave blank for now, update after Vercel deployment)
+5. Click **Deploy**.
+
+### 3. Deploy Frontend to Vercel (Free)
+1. Go to [Vercel.com](https://vercel.com) and **Add New Project**.
+2. Import your GitHub repository.
+3. Edit the **Root Directory** to be `frontend`.
+4. Add the Environment Variable:
+   - `NEXT_PUBLIC_API_URL`: (The URL of your deployed Render backend + `/api/v1`)
+5. Click **Deploy**.
+
+*After Vercel deploys, copy the Vercel URL and update your `ALLOWED_ORIGINS` variable in Render to secure your API.*
+
+---
+
+## API Documentation
+
+Once the backend is running, FastAPI auto-generates interactive API documentation.
+Navigate to:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+**Key Endpoints:**
+- `POST /api/v1/payments/process` - Submit a transaction for ML inference.
+- `GET /api/v1/dashboard/stats` - Retrieve aggregate analytics.
+- `GET /health` - API health check.
+
+---
+
+## GitHub Portfolio Instructions
+
+To make this repository stand out to recruiters:
+1. Replace `<your-username>` in this README with your actual GitHub username.
+2. Add screenshots of the Dashboard, Merchant Sandbox, and Developer Console to an `/assets` folder and embed them in this README.
+3. Add a link to your live Vercel deployment at the top of the repository in the "About" section.
+4. Highlight this project as a pinned repository on your GitHub profile.

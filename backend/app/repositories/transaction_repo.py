@@ -1,81 +1,109 @@
 from sqlalchemy.orm import Session
 from app.models.models import Transaction, FraudPrediction, Customer, Merchant, FraudAlert
 import uuid
+from datetime import datetime
+import json
 
 class TransactionRepository:
     def __init__(self, db: Session):
         self.db = db
         
+    def get_or_create_customer(self, name: str, mobile: str = None) -> Customer:
+        customer_id_str = f"CUST_{name.replace(' ', '').upper()}"
+        customer = self.db.query(Customer).filter(Customer.customer_id == customer_id_str).first()
+        if not customer:
+            customer = Customer(
+                customer_id=customer_id_str,
+                name=name,
+                mobile_number=mobile,
+                kyc_status="Verified"
+            )
+            self.db.add(customer)
+            self.db.commit()
+            self.db.refresh(customer)
+        return customer
+
+    def get_or_create_merchant(self, name: str, category: str) -> Merchant:
+        merchant_id_str = f"MERCH_{name.replace(' ', '').upper()}"
+        merchant = self.db.query(Merchant).filter(Merchant.merchant_id == merchant_id_str).first()
+        if not merchant:
+            merchant = Merchant(
+                merchant_id=merchant_id_str,
+                name=name,
+                category=category,
+                risk_rating="Low"
+            )
+            self.db.add(merchant)
+            self.db.commit()
+            self.db.refresh(merchant)
+        return merchant
+
     def save_transaction(self, tx_data: dict, decision_result: dict, customer_id: int, merchant_id: int) -> str:
-        tx_id = str(uuid.uuid4())
+        tx_id = f"TXN{datetime.now().strftime('%Y%m%d%H%M%S')}{uuid.uuid4().hex[:4].upper()}"
         
-        # Determine status based on decision
         status_map = {
-            "Approve": "completed",
-            "Review": "processing", # Or "reviewed" state
-            "Block": "blocked"
+            "APPROVE": "Completed",
+            "REVIEW": "Processing",
+            "BLOCK": "Blocked"
         }
-        status = status_map.get(decision_result["decision"], "processing")
+        status = status_map.get(decision_result["decision"], "Processing")
         
         db_transaction = Transaction(
             transaction_id=tx_id,
             customer_id=customer_id,
             merchant_id=merchant_id,
             amount=tx_data.get("amount"),
-            currency=tx_data.get("currency", "USD"),
+            currency="INR",
             payment_method=tx_data.get("payment_method"),
+            upi_app=tx_data.get("upi_app"),
+            upi_id=tx_data.get("upi_id"),
+            bank_name=tx_data.get("bank_name"),
             device=tx_data.get("device"),
-            browser=tx_data.get("browser"),
-            os=tx_data.get("os"),
-            location=tx_data.get("location"),
+            city=tx_data.get("city"),
+            state=tx_data.get("state"),
             ip_address=tx_data.get("ip_address"),
-            transaction_type=tx_data.get("transaction_type"),
             status=status
         )
         self.db.add(db_transaction)
         
         db_prediction = FraudPrediction(
             transaction_id=tx_id,
-            ml_probability=decision_result.get("confidence") / 100 if decision_result["decision"] == "Block" else (100 - decision_result.get("confidence")) / 100, # Mock prob extraction
-            risk_score=decision_result["risk_score"],
-            risk_level=decision_result["risk_level"],
-            recommendation=decision_result["decision"],
-            confidence=decision_result["confidence"],
-            rule_explanations=" | ".join(decision_result.get("reasons", []))
+            fraud_probability=decision_result.get("fraud_probability", 0.0),
+            risk_score=decision_result.get("risk_score", 0.0),
+            risk_level=decision_result.get("risk_level", "Low"),
+            decision=decision_result.get("decision", "APPROVE"),
+            recommendation=decision_result.get("recommendation", ""),
+            confidence=decision_result.get("confidence", 0.0),
+            reasons=json.dumps(decision_result.get("reasons", []))
         )
         self.db.add(db_prediction)
         
-        if decision_result["decision"] in ["Block", "Review"]:
+        if decision_result["decision"] in ["BLOCK", "REVIEW"]:
             db_alert = FraudAlert(
                 transaction_id=tx_id,
-                severity=decision_result["risk_level"],
-                status="open",
-                analyst_notes="System generated alert."
+                severity=decision_result.get("risk_level", "High"),
+                status="open"
             )
             self.db.add(db_alert)
             
         self.db.commit()
         return tx_id, status
 
-    def get_customer_history(self, customer_uid: str) -> dict:
-        customer = self.db.query(Customer).filter(Customer.customer_id == customer_uid).first()
+    def get_customer_history(self, name: str) -> dict:
+        customer_id_str = f"CUST_{name.replace(' ', '').upper()}"
+        customer = self.db.query(Customer).filter(Customer.customer_id == customer_id_str).first()
         if not customer:
             return {"has_previous_transactions": False, "average_monthly_spend": 0}
             
-        # Simplified query for history
         return {
             "has_previous_transactions": True,
-            "average_monthly_spend": customer.average_monthly_spend,
+            "average_monthly_spend": customer.wallet_balance, # mock for now
             "risk_score": customer.risk_score
         }
         
-    def get_merchant_risk(self, merchant_uid: str) -> float:
-        merchant = self.db.query(Merchant).filter(Merchant.merchant_id == merchant_uid).first()
+    def get_merchant_risk(self, name: str) -> float:
+        merchant_id_str = f"MERCH_{name.replace(' ', '').upper()}"
+        merchant = self.db.query(Merchant).filter(Merchant.merchant_id == merchant_id_str).first()
         if not merchant:
             return 0.0
         return merchant.fraud_percentage
-        
-    def get_customer_and_merchant_ids(self, customer_uid: str, merchant_uid: str):
-        c = self.db.query(Customer).filter(Customer.customer_id == customer_uid).first()
-        m = self.db.query(Merchant).filter(Merchant.merchant_id == merchant_uid).first()
-        return c.id if c else None, m.id if m else None
